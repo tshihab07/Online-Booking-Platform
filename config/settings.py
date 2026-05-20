@@ -35,6 +35,26 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Third party
+    'crispy_forms',
+    'crispy_bootstrap5',
+    'rest_framework',
+    'corsheaders',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    
+    # Local apps
+    'accounts',
+    'core',
+    'businesses',
+    'bookings',
+    'themes',
+    'analytics',
+    'api',
+    'payments',
+    'notifications'
 ]
 
 MIDDLEWARE = [
