@@ -49,14 +49,14 @@ INSTALLED_APPS = [
     
     # Local apps
     'accounts',
-    'core',
-    'businesses',
-    'bookings',
-    'themes',
-    'analytics',
-    'api',
-    'payments',
-    'notifications',
+    # 'core',
+    # 'businesses',
+    # 'bookings',
+    # 'themes',
+    # 'analytics',
+    # 'api',
+    # 'payments',
+    # 'notifications',
 ]
 
 MIDDLEWARE = [
@@ -192,6 +192,11 @@ if not DEBUG:
 # Internal IPs
 INTERNAL_IPS = config('INTERNAL_IPS', default='127.0.0.1,localhost').split(',')
 
+# Ensure logs directory exists
+LOGS_DIR = os.path.join(BASE_DIR, 'logs')
+if not os.path.exists(LOGS_DIR):
+    os.makedirs(LOGS_DIR)
+
 # Logging
 LOGGING = {
     'version': 1,
@@ -209,7 +214,7 @@ LOGGING = {
         },
         'file': {
             'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs' / 'django.log',
+            'filename': os.path.join(LOGS_DIR, 'django.log'),
             'formatter': 'verbose',
         },
     },
