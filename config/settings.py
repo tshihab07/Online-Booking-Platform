@@ -12,20 +12,12 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*').split(',')
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# MongoDB Connection for Djongo
+# django mongodb-engine settings
 DATABASES = {
     'default': {
-        'ENGINE': 'djongo',
+        'ENGINE': 'django_mongodb_backend',
+        'HOST': config('MONGODB_CONNECTION_STRING'),
         'NAME': config('MONGODB_NAME'),
-        'ENFORCE_SCHEMA': False,
-        'CLIENT': {
-            'host': config('MONGODB_CONNECTION_STRING'),
-            'port': 27017,
-            'username': config('MONGODB_USER'),
-            'password': config('MONGODB_PASSWORD'),
-            'authSource': 'admin',
-            'authMechanism': 'SCRAM-SHA-1',
-        }
     }
 }
 
