@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from djongo import models as djongo_models
 
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
@@ -11,7 +10,7 @@ class CustomUser(AbstractUser):
     avatar = models.ImageField(upload_to='avatars/', blank=True)
     
     # multi-tenancy
-    businesses = djongo_models.JSONField(default=list)  # List of business_ids user belongs to
+    businesses = models.JSONField(default=list)  # List of business_ids user belongs to
     active_business_id = models.CharField(max_length=50, null=True, blank=True)
     role = models.CharField(max_length=20, default='owner')  # owner, manager, staff
     
