@@ -41,14 +41,14 @@ INSTALLED_APPS = [
     
     # Local apps
     'accounts',
-    # 'core',
-    # 'businesses',
-    # 'bookings',
-    # 'themes',
-    # 'analytics',
-    # 'api',
-    # 'payments',
-    # 'notifications',
+    'core',
+    'businesses',
+    'bookings',
+    'themes',
+    'analytics',
+    'api',
+    'payments',
+    'notifications',
 ]
 
 MIDDLEWARE = [
