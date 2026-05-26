@@ -1,7 +1,8 @@
 from django.db import models
+from django_mongodb_backend.fields import ObjectIdField
 
 class Booking(models.Model):
-    _id = models.ObjectIdField(primary_key=True)
+    _id = ObjectIdField(primary_key=True)
     business = models.ForeignKey('businesses.Business', on_delete=models.CASCADE)
     
     # Customer Info
