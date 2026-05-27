@@ -1,31 +1,39 @@
+# Core
+Django==5.2.1
+django-mongodb-backend==6.0.3
 pymongo==4.10.1
 dnspython==2.6.1
 
+# Auth
+django-allauth==0.63.3
+
+# Forms & Templates
 django-crispy-forms==2.1
 crispy-bootstrap5==2024.2
 
+# Images
 Pillow==10.3.0
 
+# Config
 python-decouple==3.8
 
+# Payments
 stripe==9.6.0
-twilio==9.2.3
 
+# QR Code
 qrcode==7.4.2
 
+# Async Tasks
 celery==5.4.0
 redis==5.0.4
 
-django-allauth==0.63.3
-
+# REST API
 djangorestframework==3.15.1
 django-cors-headers==4.4.0
 
+# Static Files & Server
 gunicorn==22.0.0
 whitenoise==6.7.0
 
+# Utilities
 python-dateutil==2.9.0.post0
-
-django-tailwind==3.8.0
-django-browser-reload==1.15.0
-django-htmx==1.17.3
