@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load booking_tags %}
+
+{% block theme_css %}
+<style>
+  :root {
+    --sidebar-width: 260px;
+    --color-primary: #6366f1;
+    --color-secondary: #8b5cf6;
+    --color-accent: #06b6d4;
+    --color-bg: #0f0f1a;
+    --color-surface: #1a1a2e;
+    --color-surface-2: #16213e;
+    --color-border: #2a2a4a;
+    --color-text: #e8eaf6;
+    --color-text-muted: #7986cb;
+  }
+  body { background: var(--color-bg); color: var(--color-text); }
+  .sidebar { width: var(--sidebar-width); background: var(--color-surface); border-right: 1px solid var(--color-border); }
+  .nav-link { transition: all 0.2s; border-radius: 10px; }
+  .nav-link:hover, .nav-link.active { background: rgba(99,102,241,0.15); color: var(--color-primary); }
+  .nav-link.active { border-left: 3px solid var(--color-primary); }
+  .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 16px; }
+  .form-input, .form-select, .form-textarea {
+    background: var(--color-surface-2); border: 1px solid var(--color-border);
+    color: var(--color-text); border-radius: 10px; padding: 10px 14px; width: 100%;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline: none; border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white; padding: 10px 24px; border-radius: 10px; font-weight: 600;
+    transition: opacity 0.2s; border: none; cursor: pointer;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-secondary {
+    background: var(--color-surface-2); color: var(--color-text);
+    border: 1px solid var(--color-border); padding: 10px 24px;
+    border-radius: 10px; font-weight: 500; cursor: pointer;
+  }
+  .metric-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 16px; padding: 24px; }
+  .badge { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .badge-green { background: rgba(34,197,94,0.15); color: #22c55e; }
+  .badge-red { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .badge-yellow { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .badge-blue { background: rgba(59,130,246,0.15); color: #3b82f6; }
+  .badge-purple { background: rgba(99,102,241,0.15); color: #6366f1; }
+  .table-row:hover { background: rgba(99,102,241,0.05); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex h-screen overflow-hidden">
+
+  <!-- Sidebar -->
+  <aside class="sidebar flex flex-col fixed h-full z-30 overflow-y-auto">
+    <!-- Logo -->
+    <div class="p-6 border-b border-[var(--color-border)]">
+      <a href="{% url 'core:home' %}" class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+          <i class="fas fa-calendar-check text-white text-sm"></i>
+        </div>
+        <span class="text-lg font-bold text-white">Bookify</span>
+      </a>
+    </div>
+
+    <!-- Business Switcher -->
+    {% if user_businesses %}
+    <div class="px-4 py-3 border-b border-[var(--color-border)]">
+      <form method="post" action="{% url 'accounts:switch_business' %}">
+        {% csrf_token %}
+        <select name="business_id" onchange="this.form.submit()"
+          class="w-full text-sm bg-[var(--color-surface-2)] border border-[var(--color-border)] text-[var(--color-text)] rounded-lg px-3 py-2">
+          {% for biz in user_businesses %}
+          <option value="{{ biz.pk }}" {% if active_business and biz.pk == active_business.pk %}selected{% endif %}>
+            {{ biz.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </form>
+    </div>
+    {% endif %}
+
+    <!-- Navigation -->
+    <nav class="flex-1 px-3 py-4 space-y-1">
+      <a href="{% url 'businesses:dashboard' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm {% if page == 'dashboard' %}active{% endif %}">
+        <i class="fas fa-chart-pie w-5 text-center"></i> Dashboard
+      </a>
+      <a href="{% url 'businesses:calendar' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm {% if page == 'calendar' %}active{% endif %}">
+        <i class="fas fa-calendar-alt w-5 text-center"></i> Calendar
+      </a>
+      <a href="{% url 'businesses:services' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm {% if page == 'services' %}active{% endif %}">
+        <i class="fas fa-concierge-bell w-5 text-center"></i> Services
+      </a>
+      <a href="{% url 'businesses:staff' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm {% if page == 'staff' %}active{% endif %}">
+        <i class="fas fa-users w-5 text-center"></i> Staff
+      </a>
+      <a href="{% url 'businesses:clients' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm {% if page == 'clients' %}active{% endif %}">
+        <i class="fas fa-address-book w-5 text-center"></i> Clients
+      </a>
+      <a href="{% url 'businesses:analytics' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm {% if page == 'analytics' %}active{% endif %}">
+        <i class="fas fa-chart-bar w-5 text-center"></i> Analytics
+      </a>
+
+      <div class="pt-3 pb-1 px-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">Marketing</div>
+      <a href="{% url 'businesses:fill_gap' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm {% if page == 'marketing' %}active{% endif %}">
+        <i class="fas fa-bullhorn w-5 text-center"></i> Fill the Gap
+      </a>
+
+      <div class="pt-3 pb-1 px-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">Settings</div>
+      <a href="{% url 'businesses:settings' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm {% if page == 'settings' %}active{% endif %}">
+        <i class="fas fa-cog w-5 text-center"></i> Settings
+      </a>
+      {% if active_business %}
+      <a href="/b/{{ active_business.slug }}/" target="_blank" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm">
+        <i class="fas fa-external-link-alt w-5 text-center"></i> View Booking Page
+      </a>
+      {% endif %}
+    </nav>
+
+    <!-- User -->
+    <div class="p-4 border-t border-[var(--color-border)]">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
+          {{ user.email|first|upper }}
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium truncate">{{ user.email }}</p>
+          <p class="text-xs text-[var(--color-text-muted)]">{{ user.role|title }}</p>
+        </div>
+        <form method="post" action="{% url 'accounts:logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="text-[var(--color-text-muted)] hover:text-red-400 transition-colors">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 overflow-y-auto" style="margin-left: var(--sidebar-width);">
+    <!-- Top Bar -->
+    <header class="sticky top-0 z-20 bg-[var(--color-bg)] border-b border-[var(--color-border)] px-8 py-4 flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-bold">{% block page_title %}Dashboard{% endblock %}</h1>
+        <p class="text-sm text-[var(--color-text-muted)]">{% block page_subtitle %}{% endblock %}</p>
+      </div>
+      <div class="flex items-center gap-3">
+        {% block header_actions %}{% endblock %}
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <div class="p-8">
+      {% block dashboard_content %}{% endblock %}
+    </div>
+  </main>
+</div>
+{% endblock %}
