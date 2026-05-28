@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Bookify — Online Booking Platform{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Professional online booking for salons, restaurants, hospitals, hotels and events.{% endblock %}">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- Tailwind CDN (dev) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: 'var(--color-primary)',
+            secondary: 'var(--color-secondary)',
+            accent: 'var(--color-accent)',
+          },
+          fontFamily: {
+            heading: 'var(--font-heading, "Inter", sans-serif)',
+            body: 'var(--font-body, "Inter", sans-serif)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Global CSS -->
+  <link rel="stylesheet" href="/static/css/dashboard.css">
+
+  <!-- Dynamic theme CSS vars -->
+  {% block theme_css %}{% endblock %}
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="font-body antialiased">
+
+  {% if messages %}
+  <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2">
+    {% for message in messages %}
+    <div class="toast flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-white text-sm font-medium
+      {% if message.tags == 'success' %}bg-green-500
+      {% elif message.tags == 'error' %}bg-red-500
+      {% elif message.tags == 'warning' %}bg-yellow-500
+      {% else %}bg-indigo-500{% endif %}">
+      <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+      {{ message }}
+      <button onclick="this.parentElement.remove()" class="ml-auto opacity-70 hover:opacity-100">✕</button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% block content %}{% endblock %}
+
+  <script>
+    // Auto-dismiss toasts
+    setTimeout(() => {
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+    }, 5000);
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
