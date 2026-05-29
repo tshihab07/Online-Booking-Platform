@@ -1,0 +1,40 @@
+{% extends 'base_dashboard.html' %}
+{% block page_title %}My Profile{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-xl">
+  <div class="card p-8">
+    <div class="flex items-center gap-5 mb-8">
+      <div class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-black text-white"
+           style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));">
+        {{ user.email|first|upper }}
+      </div>
+      <div>
+        <h2 class="text-xl font-bold">{{ user.email }}</h2>
+        <p class="text-sm" style="color: var(--color-text-muted);">{{ user.role|title }} · Member since {{ user.date_joined|date:"M Y" }}</p>
+      </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      <div class="space-y-5">
+        <div>
+          <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Email</label>
+          {{ form.email }}{{ form.email.errors }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Phone</label>
+          {{ form.phone }}{{ form.phone.errors }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Avatar</label>
+          {{ form.avatar }}{{ form.avatar.errors }}
+        </div>
+      </div>
+      <button type="submit" class="btn-primary mt-6">
+        <i class="fas fa-save"></i> Save Profile
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}
