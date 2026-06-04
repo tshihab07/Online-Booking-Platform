@@ -59,6 +59,17 @@
   </div>
   {% endif %}
 
+  {% if platform_announcements %}
+  <div class="max-w-4xl mx-auto px-4 pt-4 space-y-2">
+    {% for announcement in platform_announcements %}
+    <div class="rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-3 text-sm">
+      <div class="font-semibold text-indigo-200">{{ announcement.title }}</div>
+      <p class="text-[var(--color-text-muted)] mt-1">{{ announcement.message }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   {% block content %}{% endblock %}
 
   <script>
