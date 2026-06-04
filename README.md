@@ -15,6 +15,9 @@ This README intentionally lists configuration names only. Do not paste real `.en
 - Redis support for Celery and Django cache
 - Email confirmations and reminders
 - 25 theme definitions: 5 themes for each supported business type
+- KGB platform admin at `/kgb-admin/` (users, businesses, bookings, payments, support, plans, announcements)
+- OpenAPI docs at `/docs/` (Swagger) and `/docs/redoc/`
+- Subscription plan limits enforced per tier (services, staff, bookings, API access)
 
 ## Tech Stack
 
@@ -40,6 +43,7 @@ config/         Django settings, URLs, Celery app
 core/           Home page, middleware, context processors, template tags
 notifications/  Email templates, notification helpers, Celery tasks
 payments/       Stripe checkout and payment views
+platform_admin/ KGB admin panel, plans, limits, announcements
 themes/         Theme registry and theme rendering helpers
 templates/      Shared base templates and layout includes
 static/         CSS and JavaScript assets
@@ -93,10 +97,25 @@ CELERY_RESULT_BACKEND
 
 `REDIS_URL` is the main value used by the project. `CELERY_BROKER_URL` and `CELERY_RESULT_BACKEND` are optional overrides; if you omit them, both default to `REDIS_URL`.
 
-AllAuth setting:
+AllAuth setting (use exactly `none`, `optional`, or `mandatory`):
 
 ```text
 ACCOUNT_EMAIL_VERIFICATION
+```
+
+Platform admin (KGB panel at `/kgb-admin/`):
+
+```text
+ADMIN_USERNAME
+ADMIN_PASSWORD
+```
+
+Django superuser (`python manage.py create_superuser`):
+
+```text
+SUPERUSER_EMAIL
+SUPERUSER_PASSWORD
+SUPERUSER_USERNAME
 ```
 
 CORS and local debug helpers:
@@ -174,11 +193,14 @@ Run database migrations:
 python manage.py migrate
 ```
 
-Create an admin user:
+Bootstrap platform data and optional demo tenants:
 
 ```bash
-python manage.py createsuperuser
+python manage.py create_superuser
+python manage.py init_platform --demo
 ```
+
+See [TESTING.md](TESTING.md) for a full checklist without using `/signup/`.
 
 Optional static collection:
 
@@ -226,8 +248,11 @@ If you use hosted Redis, you do not run `redis-server`; the app connects through
 /dashboard/onboarding/    Create the first business
 /dashboard/settings/      Theme and business settings
 /b/<slug>/                Public booking page
-/admin/                   Django admin
-/api/v1/                  API routes
+/kgb-admin/               Platform admin panel (env credentials)
+/admin/                   Django admin (superuser)
+/docs/                    API documentation (Swagger UI)
+/docs/redoc/              API documentation (ReDoc)
+/api/v1/                  REST API routes
 ```
 
 ## Fixing The `Invalid filter: 'split'` Error
