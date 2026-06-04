@@ -92,6 +92,9 @@
       <a href="{% url 'businesses:calendar' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm {% if page == 'calendar' %}active{% endif %}">
         <i class="fas fa-calendar-alt w-5 text-center"></i> Calendar
       </a>
+      <a href="{% url 'businesses:all_time_bookings' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm {% if page == 'all_bookings' %}active{% endif %}">
+        <i class="fas fa-clock-rotate-left w-5 text-center"></i> All Time Booking
+      </a>
       <a href="{% url 'businesses:services' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm {% if page == 'services' %}active{% endif %}">
         <i class="fas fa-concierge-bell w-5 text-center"></i> Services
       </a>
@@ -114,9 +117,34 @@
       <a href="{% url 'businesses:settings' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm {% if page == 'settings' %}active{% endif %}">
         <i class="fas fa-cog w-5 text-center"></i> Settings
       </a>
+      <a href="{% url 'accounts:settings' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm {% if page == 'account_settings' %}active{% endif %}">
+        <i class="fas fa-user-gear w-5 text-center"></i> Account Settings
+      </a>
+      <a href="{% url 'accounts:support' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm {% if page == 'support' %}active{% endif %}">
+        <i class="fas fa-life-ring w-5 text-center"></i> Support
+      </a>
       {% if active_business %}
       <a href="/b/{{ active_business.slug }}/" target="_blank" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm">
         <i class="fas fa-external-link-alt w-5 text-center"></i> View Booking Page
+      </a>
+      {% endif %}
+
+      {% if user.is_staff %}
+      <div class="pt-3 pb-1 px-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">Platform Admin</div>
+      <a href="{% url 'accounts:platform_dashboard' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm {% if page == 'platform_dashboard' %}active{% endif %}">
+        <i class="fas fa-shield-halved w-5 text-center"></i> Admin Dashboard
+      </a>
+      <a href="{% url 'accounts:platform_users' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm {% if page == 'platform_users' %}active{% endif %}">
+        <i class="fas fa-user-check w-5 text-center"></i> Manage Users
+      </a>
+      <a href="{% url 'accounts:platform_payments' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm {% if page == 'platform_payments' %}active{% endif %}">
+        <i class="fas fa-credit-card w-5 text-center"></i> Payments
+      </a>
+      <a href="{% url 'accounts:platform_support' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm {% if page == 'platform_support' %}active{% endif %}">
+        <i class="fas fa-headset w-5 text-center"></i> Support Queue
+      </a>
+      <a href="{% url 'accounts:platform_settings' %}" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm {% if page == 'platform_settings' %}active{% endif %}">
+        <i class="fas fa-sliders w-5 text-center"></i> Platform Settings
       </a>
       {% endif %}
     </nav>
