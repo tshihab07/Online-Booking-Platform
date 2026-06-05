@@ -1,0 +1,24 @@
+{% extends 'base_dashboard.html' %}
+{% block page_title %}{{ ticket.subject }}{% endblock %}
+{% block page_subtitle %}{{ ticket.user.email }} · {{ ticket.created_at|date:"M d, Y" }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="grid xl:grid-cols-3 gap-6">
+  <div class="xl:col-span-2 card p-6">
+    <h2 class="text-lg font-bold mb-3">User Message</h2>
+    <p class="text-sm leading-6 text-[var(--color-text-muted)] whitespace-pre-line">{{ ticket.message }}</p>
+  </div>
+  <div class="card p-6">
+    <h2 class="text-lg font-bold mb-5">Admin Response</h2>
+    <form method="post">
+      {% csrf_token %}
+      <div class="space-y-4">
+        <div><label class="block text-sm mb-1 text-[var(--color-text-muted)]">Status</label>{{ form.status }}</div>
+        <div><label class="block text-sm mb-1 text-[var(--color-text-muted)]">Priority</label>{{ form.priority }}</div>
+        <div><label class="block text-sm mb-1 text-[var(--color-text-muted)]">Response</label>{{ form.admin_response }}</div>
+      </div>
+      <button class="btn-primary mt-5" type="submit"><i class="fas fa-save"></i> Save Response</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
