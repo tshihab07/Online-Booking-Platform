@@ -1,0 +1,41 @@
+{% extends 'base_dashboard.html' %}
+{% load booking_tags %}
+{% block page_title %}Platform Admin{% endblock %}
+{% block page_subtitle %}Users, subscriptions, support, and operating health{% endblock %}
+
+{% block dashboard_content %}
+<div class="grid md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+  <div class="metric-card"><span class="text-sm text-[var(--color-text-muted)]">Total Users</span><div class="text-3xl font-black mt-2">{{ metrics.total_users }}</div></div>
+  <div class="metric-card"><span class="text-sm text-[var(--color-text-muted)]">Pending Approval</span><div class="text-3xl font-black mt-2">{{ metrics.pending_users }}</div></div>
+  <div class="metric-card"><span class="text-sm text-[var(--color-text-muted)]">Subscription Income</span><div class="text-3xl font-black mt-2">{{ metrics.subscription_income|currency }}</div></div>
+  <div class="metric-card"><span class="text-sm text-[var(--color-text-muted)]">Open Support</span><div class="text-3xl font-black mt-2">{{ metrics.open_tickets }}</div></div>
+</div>
+
+<div class="grid xl:grid-cols-3 gap-6">
+  <div class="xl:col-span-2 card overflow-hidden">
+    <div class="p-5 flex items-center justify-between"><h2 class="font-bold">Recent Users</h2><a class="text-sm text-indigo-400" href="{% url 'accounts:platform_users' %}">View all</a></div>
+    <table class="w-full text-sm">
+      <tbody>
+        {% for item in recent_users %}
+        <tr class="table-row border-t border-[var(--color-border)]">
+          <td class="px-5 py-4"><a class="font-semibold text-indigo-300" href="{% url 'accounts:platform_user_audience' item.pk %}">{{ item.email }}</a><div class="text-xs text-[var(--color-text-muted)]">Joined {{ item.created_at|date:"M d, Y" }}</div></td>
+          <td class="px-5 py-4">{{ item.role|title }}</td>
+          <td class="px-5 py-4"><span class="badge {% if item.account_status == 'approved' %}badge-green{% elif item.account_status == 'pending' %}badge-yellow{% else %}badge-red{% endif %}">{{ item.get_account_status_display }}</span></td>
+          <td class="px-5 py-4 text-right"><a class="text-indigo-400" href="{% url 'accounts:platform_user_detail' item.pk %}">Manage</a></td>
+        </tr>
+        {% empty %}<tr><td class="px-5 py-10 text-center text-[var(--color-text-muted)]">No users yet.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card overflow-hidden">
+    <div class="p-5 flex items-center justify-between"><h2 class="font-bold">Support Queue</h2><a class="text-sm text-indigo-400" href="{% url 'accounts:platform_support' %}">Open</a></div>
+    {% for ticket in tickets %}
+    <a href="{% url 'accounts:platform_ticket_detail' ticket.pk %}" class="block px-5 py-4 border-t border-[var(--color-border)] hover:bg-white/5">
+      <div class="font-semibold text-white">{{ ticket.subject }}</div>
+      <div class="text-xs text-[var(--color-text-muted)]">{{ ticket.user.email }} · {{ ticket.get_status_display }}</div>
+    </a>
+    {% empty %}<div class="px-5 py-10 text-center text-[var(--color-text-muted)]">No tickets.</div>{% endfor %}
+  </div>
+</div>
+{% endblock %}
