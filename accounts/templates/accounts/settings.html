@@ -1,0 +1,59 @@
+{% extends 'base_dashboard.html' %}
+{% block page_title %}Account Settings{% endblock %}
+{% block page_subtitle %}Personal information, password, and account controls{% endblock %}
+
+{% block dashboard_content %}
+<div class="grid xl:grid-cols-3 gap-6">
+  <div class="xl:col-span-2 space-y-6">
+    <div class="card p-6">
+      <h2 class="text-lg font-bold mb-5">Personal Information</h2>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="profile">
+        <div class="grid sm:grid-cols-2 gap-5">
+          <div><label class="block text-sm mb-1 text-[var(--color-text-muted)]">First name</label>{{ profile_form.first_name }}</div>
+          <div><label class="block text-sm mb-1 text-[var(--color-text-muted)]">Last name</label>{{ profile_form.last_name }}</div>
+          <div><label class="block text-sm mb-1 text-[var(--color-text-muted)]">Email</label>{{ profile_form.email }}</div>
+          <div><label class="block text-sm mb-1 text-[var(--color-text-muted)]">Phone</label>{{ profile_form.phone }}</div>
+          <div class="sm:col-span-2"><label class="block text-sm mb-1 text-[var(--color-text-muted)]">Avatar</label>{{ profile_form.avatar }}</div>
+        </div>
+        <button class="btn-primary mt-6" type="submit"><i class="fas fa-save"></i> Update Account</button>
+      </form>
+    </div>
+
+    <div class="card p-6">
+      <h2 class="text-lg font-bold mb-5">Change Password</h2>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="password">
+        <div class="grid sm:grid-cols-3 gap-5">
+          <div><label class="block text-sm mb-1 text-[var(--color-text-muted)]">Current</label>{{ password_form.old_password }}</div>
+          <div><label class="block text-sm mb-1 text-[var(--color-text-muted)]">New</label>{{ password_form.new_password1 }}</div>
+          <div><label class="block text-sm mb-1 text-[var(--color-text-muted)]">Confirm</label>{{ password_form.new_password2 }}</div>
+        </div>
+        <button class="btn-secondary mt-6" type="submit"><i class="fas fa-key"></i> Save Password</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="space-y-6">
+    <div class="card p-6">
+      <h2 class="text-lg font-bold mb-2">Approval Status</h2>
+      <span class="badge {% if user.account_status == 'approved' %}badge-green{% elif user.account_status == 'pending' %}badge-yellow{% else %}badge-red{% endif %}">
+        {{ user.get_account_status_display }}
+      </span>
+    </div>
+    <div class="card p-6 border-red-500/30">
+      <h2 class="text-lg font-bold mb-2 text-red-300">Delete Account</h2>
+      <p class="text-sm text-[var(--color-text-muted)] mb-4">This deactivates your login and hides your account from normal use.</p>
+      <form method="post" action="{% url 'accounts:delete_account' %}">
+        {% csrf_token %}
+        <input name="confirm_email" class="form-input" placeholder="{{ user.email }}">
+        <button class="mt-4 px-4 py-2 rounded-lg bg-red-500/15 text-red-300 border border-red-500/30" type="submit">
+          <i class="fas fa-user-slash"></i> Delete Account
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
