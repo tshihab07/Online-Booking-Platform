@@ -1,6 +1,6 @@
 # Core
 Django==5.2.1
-django-mongodb-backend==6.0.3
+django-mongodb-backend==5.2.3
 pymongo==4.10.1
 dnspython==2.6.1
 
