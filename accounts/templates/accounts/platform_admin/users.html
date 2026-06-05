@@ -1,0 +1,35 @@
+{% extends 'base_dashboard.html' %}
+{% block page_title %}Manage Users{% endblock %}
+{% block page_subtitle %}Approve, suspend, review businesses, and reset passwords{% endblock %}
+
+{% block header_actions %}
+<div class="flex gap-2 text-sm">
+  <a class="btn-secondary" href="{% url 'accounts:platform_users' %}">All</a>
+  <a class="btn-secondary" href="?status=pending">Pending</a>
+  <a class="btn-secondary" href="?status=approved">Approved</a>
+</div>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="card overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-[var(--color-surface-2)] text-[var(--color-text-muted)]">
+      <tr><th class="text-left px-5 py-3">User</th><th class="text-left px-5 py-3">Role</th><th class="text-left px-5 py-3">Status</th><th class="text-left px-5 py-3">Joined</th><th class="text-right px-5 py-3">Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for item in managed_users %}
+      <tr class="table-row border-t border-[var(--color-border)]">
+        <td class="px-5 py-4"><a class="font-semibold text-indigo-300" href="{% url 'accounts:platform_user_audience' item.pk %}">{{ item.email }}</a></td>
+        <td class="px-5 py-4">{{ item.role|title }}</td>
+        <td class="px-5 py-4"><span class="badge {% if item.account_status == 'approved' %}badge-green{% elif item.account_status == 'pending' %}badge-yellow{% else %}badge-red{% endif %}">{{ item.get_account_status_display }}</span></td>
+        <td class="px-5 py-4">{{ item.created_at|date:"M d, Y" }}</td>
+        <td class="px-5 py-4 text-right">
+          <form class="inline" method="post" action="{% url 'accounts:platform_user_action' item.pk %}">{% csrf_token %}<input type="hidden" name="action" value="approved"><button class="text-green-400 mr-3">Approve</button></form>
+          <a class="text-indigo-400" href="{% url 'accounts:platform_user_detail' item.pk %}">Manage</a>
+        </td>
+      </tr>
+      {% empty %}<tr><td colspan="5" class="px-5 py-12 text-center text-[var(--color-text-muted)]">No users found.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
