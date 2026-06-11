@@ -1,0 +1,320 @@
+{% load static booking_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ business.name }} — Book Online</title>
+  <meta name="description" content="{{ business.description|default:'Book your appointment online.' }}">
+  <meta property="og:title" content="{{ business.name }}">
+  <meta property="og:description" content="{{ business.description }}">
+  {% if business.hero_image %}<meta property="og:image" content="{{ business.hero_image.url }}">{% endif %}
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
+  <style>
+    {{ css_vars }}
+    body { background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); }
+    .hero-bg {
+      background: {% if business.hero_image %}url('{{ business.hero_image.url }}') center/cover no-repeat{% else %}linear-gradient(135deg, var(--color-primary), var(--color-secondary)){% endif %};
+    }
+    .hero-overlay { background: var(--color-hero-overlay, rgba(0,0,0,0.5)); }
+    h1, h2, h3 { font-family: var(--font-heading); }
+    .btn-book {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      color: white; padding: 14px 36px; border-radius: 50px;
+      font-weight: 700; font-size: 16px; border: none; cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s; display: inline-block;
+    }
+    .btn-book:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,0,0,0.3); }
+  </style>
+</head>
+<body data-slug="{{ business.slug }}">
+
+<!-- ── Hero Section ──────────────────────────────────────────────────────── -->
+<section class="hero-bg relative min-h-[70vh] flex items-center justify-center">
+  <div class="hero-overlay absolute inset-0"></div>
+
+  <!-- Floating Glass Card -->
+  <div class="glass relative z-10 rounded-3xl p-8 md:p-12 text-center max-w-lg mx-4 animate-fade-up">
+    {% if business.logo %}
+    <img src="{{ business.logo.url }}" alt="{{ business.name }}" class="w-20 h-20 rounded-2xl object-cover mx-auto mb-5 shadow-xl">
+    {% else %}
+    <div class="w-20 h-20 rounded-2xl mx-auto mb-5 flex items-center justify-center text-3xl font-black text-white"
+         style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));">
+      {{ business.name|first|upper }}
+    </div>
+    {% endif %}
+
+    <h1 class="text-3xl md:text-4xl font-black text-white mb-2">{{ business.name }}</h1>
+    <p class="text-white/70 text-sm mb-4">{{ business.get_business_type_display }}</p>
+
+    <!-- Star Rating -->
+    <div class="flex items-center justify-center gap-2 mb-5">
+      <div class="flex text-yellow-400 text-sm">
+        {% for i in "12345" %}<i class="fas fa-star"></i>{% endfor %}
+      </div>
+      <span class="text-white/80 text-sm font-semibold">{{ avg_rating }}</span>
+      {% if review_count %}<span class="text-white/50 text-xs">({{ review_count }} reviews)</span>{% endif %}
+    </div>
+
+    {% if business.description %}
+    <p class="text-white/70 text-sm mb-6">{{ business.description }}</p>
+    {% endif %}
+
+    <button class="btn-book pulse-glow" onclick="document.getElementById('booking-section').scrollIntoView({behavior:'smooth'})">
+      <i class="fas fa-calendar-check mr-2"></i>Book Now
+    </button>
+  </div>
+</section>
+
+<!-- ── Social Proof Ticker ───────────────────────────────────────────────── -->
+{% if feed != '[]' %}
+<div class="ticker-wrap py-3 border-y" style="border-color: var(--color-border); background: var(--color-surface);">
+  <div class="ticker-content" id="ticker-content" style="color: var(--color-text-muted);">
+    Loading…
+  </div>
+  <script id="ticker-data" type="application/json">{{ feed }}</script>
+</div>
+{% endif %}
+
+<!-- ── Booking Section ───────────────────────────────────────────────────── -->
+<section id="booking-section" class="max-w-4xl mx-auto px-4 py-16">
+
+  <!-- Step Indicator -->
+  <div class="step-indicator justify-center mb-10 flex flex-wrap gap-2">
+    <div class="step active" data-step="1"><div class="step-num">1</div><span class="hidden sm:inline">Service</span></div>
+    <div class="step-line hidden sm:block"></div>
+    <div class="step" data-step="2"><div class="step-num">2</div><span class="hidden sm:inline">Date & Time</span></div>
+    <div class="step-line hidden sm:block"></div>
+    <div class="step" data-step="3"><div class="step-num">3</div><span class="hidden sm:inline">Staff</span></div>
+    <div class="step-line hidden sm:block"></div>
+    <div class="step" data-step="4"><div class="step-num">4</div><span class="hidden sm:inline">Checkout</span></div>
+  </div>
+
+  <!-- ── Step 1: Services ── -->
+  <div class="booking-step" data-step="1">
+    <h2 class="text-2xl font-bold mb-6 text-center">Choose a Service</h2>
+    {% if services %}
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      {% for service in services %}
+      <div class="service-card"
+           data-service-id="{{ service.pk }}"
+           data-service-name="{{ service.name }}"
+           data-service-price="{{ service.price }}"
+           data-service-duration="{{ service.duration }}"
+           onclick="Booking.selectService(this)">
+        <div class="quick-book">
+          <span class="text-xs font-bold px-2 py-1 rounded-full text-white" style="background: var(--color-primary);">Quick Book</span>
+        </div>
+        {% if service.image %}
+        <img src="{{ service.image.url }}" alt="{{ service.name }}" class="w-full h-32 object-cover rounded-xl mb-4">
+        {% else %}
+        <div class="w-full h-24 rounded-xl mb-4 flex items-center justify-center text-3xl"
+             style="background: {{ service.color }}22; color: {{ service.color }};">
+          <i class="fas fa-concierge-bell"></i>
+        </div>
+        {% endif %}
+        <h3 class="font-bold text-base mb-1">{{ service.name }}</h3>
+        {% if service.description %}<p class="text-xs mb-3" style="color: var(--color-text-muted);">{{ service.description|truncatechars:80 }}</p>{% endif %}
+        <div class="flex items-center justify-between mt-auto">
+          <span class="font-black text-lg" style="color: var(--color-primary);">{{ service.price|currency }}</span>
+          <span class="text-xs px-2 py-1 rounded-full" style="background: var(--color-surface-2, rgba(0,0,0,0.2)); color: var(--color-text-muted);">
+            <i class="fas fa-clock mr-1"></i>{{ service.duration|duration_display }}
+          </span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-16" style="color: var(--color-text-muted);">
+      <i class="fas fa-concierge-bell text-5xl mb-4 opacity-30"></i>
+      <p>No services available yet.</p>
+    </div>
+    {% endif %}
+    <div class="text-center">
+      <button id="btn-to-step2" disabled onclick="Booking.goToStep(2); Booking.loadHeatmap(new Date().getFullYear(), new Date().getMonth()+1);"
+        class="btn-book opacity-50">
+        Next: Choose Date & Time <i class="fas fa-arrow-right ml-2"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Step 2: Date & Time ── -->
+  <div class="booking-step hidden" data-step="2">
+    <h2 class="text-2xl font-bold mb-6 text-center">Pick a Date & Time</h2>
+
+    <!-- Calendar -->
+    <div class="glass rounded-2xl p-6 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <button id="cal-prev" class="w-9 h-9 rounded-xl flex items-center justify-center hover:opacity-80 transition-opacity"
+                style="background: var(--color-surface-2, rgba(0,0,0,0.2));">
+          <i class="fas fa-chevron-left text-sm"></i>
+        </button>
+        <h3 id="cal-title" class="font-bold text-lg"></h3>
+        <button id="cal-next" class="w-9 h-9 rounded-xl flex items-center justify-center hover:opacity-80 transition-opacity"
+                style="background: var(--color-surface-2, rgba(0,0,0,0.2));">
+          <i class="fas fa-chevron-right text-sm"></i>
+        </button>
+      </div>
+      <div id="cal-grid" class="cal-grid"></div>
+
+      <!-- Legend -->
+      <div class="flex items-center gap-4 mt-4 text-xs" style="color: var(--color-text-muted);">
+        <span class="flex items-center gap-1"><span class="cal-dot slot-green inline-block"></span> Available</span>
+        <span class="flex items-center gap-1"><span class="cal-dot slot-orange inline-block"></span> Filling up</span>
+        <span class="flex items-center gap-1"><span class="cal-dot slot-red inline-block"></span> Full</span>
+      </div>
+    </div>
+
+    <!-- Time Slots -->
+    <div class="glass rounded-2xl p-6 mb-6">
+      <h3 class="font-semibold mb-4">Available Times</h3>
+      <div id="time-slots" class="flex flex-wrap gap-2">
+        <p style="color: var(--color-text-muted);" class="text-sm">Select a date above to see available times.</p>
+      </div>
+    </div>
+
+    <div class="flex gap-3 justify-center">
+      <button onclick="Booking.goToStep(1)" class="btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back
+      </button>
+      <button id="btn-to-step3" disabled onclick="Booking.goToStep(3)"
+        class="btn-book opacity-50">
+        Next: Choose Staff <i class="fas fa-arrow-right ml-2"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Step 3: Staff ── -->
+  <div class="booking-step hidden" data-step="3">
+    <h2 class="text-2xl font-bold mb-2 text-center">Choose Your Staff</h2>
+    <p class="text-center text-sm mb-8" style="color: var(--color-text-muted);">Optional — skip to let us assign the best available.</p>
+
+    {% if staff_list %}
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6">
+      {% for member in staff_list %}
+      <div class="staff-card" data-staff-id="{{ member.pk }}" data-staff-name="{{ member.name }}"
+           onclick="Booking.selectStaff(this)">
+        {% if member.avatar %}
+        <img src="{{ member.avatar.url }}" alt="{{ member.name }}" class="staff-avatar">
+        {% else %}
+        <div class="staff-avatar-placeholder">{{ member.name|first|upper }}</div>
+        {% endif %}
+        <div class="font-semibold text-sm">{{ member.name }}</div>
+        {% if member.bio %}<div class="text-xs mt-1" style="color: var(--color-text-muted);">{{ member.bio|truncatechars:40 }}</div>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="flex gap-3 justify-center flex-wrap">
+      <button onclick="Booking.goToStep(2)" class="btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back
+      </button>
+      <button onclick="Booking.skipStaff(); Booking.goToStep(4); Booking.openCheckout();" class="btn-secondary">
+        Skip — Any Staff
+      </button>
+      <button id="btn-to-step4" disabled onclick="Booking.goToStep(4); Booking.openCheckout();"
+        class="btn-book opacity-50">
+        Next: Checkout <i class="fas fa-arrow-right ml-2"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Step 4: Placeholder (checkout is a slide panel) ── -->
+  <div class="booking-step hidden" data-step="4">
+    <div class="text-center py-16">
+      <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
+           style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));">
+        <i class="fas fa-shopping-cart text-white text-xl"></i>
+      </div>
+      <h2 class="text-2xl font-bold mb-2">Almost there!</h2>
+      <p style="color: var(--color-text-muted);">Complete your booking in the checkout panel.</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- ── Checkout Slide Panel ───────────────────────────────────────────────── -->
+<div id="checkout-overlay" class="checkout-overlay"></div>
+<div id="checkout-panel" class="checkout-panel p-6 md:p-8">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-xl font-bold">Complete Booking</h2>
+    <button onclick="Booking.closeCheckout()" class="w-9 h-9 rounded-xl flex items-center justify-center hover:opacity-70"
+            style="background: var(--color-surface-2, rgba(0,0,0,0.2));">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  <!-- Order Summary -->
+  <div class="rounded-2xl p-5 mb-6" style="background: var(--color-surface-2, rgba(0,0,0,0.2)); border: 1px solid var(--color-border);">
+    <h3 class="text-sm font-semibold mb-4" style="color: var(--color-text-muted);">ORDER SUMMARY</h3>
+    <div class="space-y-2 text-sm">
+      <div class="flex justify-between"><span style="color: var(--color-text-muted);">Service</span><span id="summary-service" class="font-semibold">—</span></div>
+      <div class="flex justify-between"><span style="color: var(--color-text-muted);">Date</span><span id="summary-date" class="font-semibold">—</span></div>
+      <div class="flex justify-between"><span style="color: var(--color-text-muted);">Time</span><span id="summary-time" class="font-semibold">—</span></div>
+      <div class="flex justify-between"><span style="color: var(--color-text-muted);">Staff</span><span id="summary-staff" class="font-semibold">—</span></div>
+      <div class="flex justify-between"><span style="color: var(--color-text-muted);">Duration</span><span id="summary-duration" class="font-semibold">—</span></div>
+      <div class="border-t pt-2 mt-2 flex justify-between text-base font-black" style="border-color: var(--color-border);">
+        <span>Total</span>
+        <span id="summary-price" style="color: var(--color-primary);">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Form -->
+  <form id="checkout-form" novalidate>
+    {% csrf_token %}
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Full Name *</label>
+        <input type="text" name="customer_name" required placeholder="John Smith"
+               class="form-input" style="background: var(--color-surface-2, rgba(0,0,0,0.3));">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Email *</label>
+        <input type="email" name="customer_email" required placeholder="john@example.com"
+               class="form-input" style="background: var(--color-surface-2, rgba(0,0,0,0.3));">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Phone *</label>
+        <input type="tel" name="customer_phone" required placeholder="+1 234 567 8900"
+               class="form-input" style="background: var(--color-surface-2, rgba(0,0,0,0.3));">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Notes (optional)</label>
+        <textarea name="customer_notes" rows="2" placeholder="Any special requests…"
+                  class="form-input" style="background: var(--color-surface-2, rgba(0,0,0,0.3)); resize: none;"></textarea>
+      </div>
+    </div>
+
+    <button type="submit" class="btn-book w-full mt-6 justify-center">
+      <i class="fas fa-lock mr-2"></i>Confirm Booking
+    </button>
+    <p class="text-center text-xs mt-3" style="color: var(--color-text-muted);">
+      <i class="fas fa-shield-alt mr-1"></i>Your information is secure and encrypted
+    </p>
+  </form>
+</div>
+
+<!-- ── Business Info Footer ───────────────────────────────────────────────── -->
+<footer class="py-12 border-t" style="border-color: var(--color-border); background: var(--color-surface);">
+  <div class="max-w-4xl mx-auto px-4 text-center">
+    <h3 class="font-bold text-lg mb-2">{{ business.name }}</h3>
+    <div class="flex flex-wrap justify-center gap-6 text-sm mt-3" style="color: var(--color-text-muted);">
+      {% if business.phone %}<span><i class="fas fa-phone mr-1"></i>{{ business.phone }}</span>{% endif %}
+      {% if business.email %}<span><i class="fas fa-envelope mr-1"></i>{{ business.email }}</span>{% endif %}
+      {% if business.address %}<span><i class="fas fa-map-marker-alt mr-1"></i>{{ business.address }}</span>{% endif %}
+    </div>
+    <p class="text-xs mt-6" style="color: var(--color-text-muted);">Powered by <strong>Bookify</strong></p>
+  </div>
+</footer>
+
+<script src="{% static 'js/booking_calender.js' %}"></script>
+</body>
+</html>
