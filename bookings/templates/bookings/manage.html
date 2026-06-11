@@ -1,0 +1,62 @@
+{% load static booking_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Booking — {{ business.name }}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+  <style>{{ css_vars }} body { background: var(--color-bg); color: var(--color-text); font-family: 'Inter', sans-serif; }</style>
+</head>
+<body>
+<div class="min-h-screen flex items-center justify-center px-4 py-12">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold">Manage Your Booking</h1>
+      <p class="text-sm mt-1" style="color: var(--color-text-muted);">{{ business.name }}</p>
+    </div>
+
+    <div class="card p-6 mb-5">
+      <div class="space-y-3 text-sm">
+        <div class="flex justify-between py-2 border-b" style="border-color: var(--color-border);">
+          <span style="color: var(--color-text-muted);">Service</span><span class="font-semibold">{{ booking.service.name }}</span>
+        </div>
+        <div class="flex justify-between py-2 border-b" style="border-color: var(--color-border);">
+          <span style="color: var(--color-text-muted);">Date</span><span class="font-semibold">{{ booking.date|date:"l, F j, Y" }}</span>
+        </div>
+        <div class="flex justify-between py-2 border-b" style="border-color: var(--color-border);">
+          <span style="color: var(--color-text-muted);">Time</span><span class="font-semibold">{{ booking.start_time|time:"g:i A" }}</span>
+        </div>
+        <div class="flex justify-between py-2">
+          <span style="color: var(--color-text-muted);">Status</span>
+          <span class="badge {% if booking.status == 'confirmed' %}badge-green{% elif booking.status == 'cancelled' %}badge-red{% else %}badge-yellow{% endif %}">
+            {{ booking.get_status_display }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    {% if booking.status not in 'cancelled,completed,no_show' %}
+    <div class="card p-6 mb-5" style="border-color: rgba(239,68,68,0.3);">
+      <h3 class="font-semibold mb-2 text-red-400">Cancel Booking</h3>
+      <p class="text-sm mb-4" style="color: var(--color-text-muted);">This action cannot be undone. A cancellation email will be sent.</p>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="cancel">
+        <button type="submit" class="btn-danger w-full justify-center"
+                onclick="return confirm('Are you sure you want to cancel this booking?')">
+          <i class="fas fa-times mr-2"></i>Cancel My Booking
+        </button>
+      </form>
+    </div>
+    {% endif %}
+
+    <a href="/b/{{ business.slug }}/" class="btn-primary w-full justify-center">
+      <i class="fas fa-calendar-plus mr-2"></i>Book Again
+    </a>
+  </div>
+</div>
+</body>
+</html>
