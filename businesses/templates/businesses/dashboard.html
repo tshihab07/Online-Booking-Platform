@@ -1,0 +1,174 @@
+{% extends 'base_dashboard.html' %}
+{% load booking_tags %}
+
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}{{ business.name }} — {{ business.get_business_type_display }}{% endblock %}
+
+{% block header_actions %}
+<a href="/b/{{ business.slug }}/" target="_blank" class="flex items-center gap-2 text-sm bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 px-4 py-2 rounded-xl hover:bg-indigo-500/20 transition-colors">
+  <i class="fas fa-external-link-alt"></i> View Booking Page
+</a>
+{% endblock %}
+
+{% block dashboard_content %}
+
+<!-- KPI Row -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+
+  <!-- Revenue Today -->
+  <div class="metric-card">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-sm text-[var(--color-text-muted)]">Revenue Today</span>
+      <div class="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
+        <i class="fas fa-dollar-sign text-green-400"></i>
+      </div>
+    </div>
+    <div class="text-3xl font-black text-white mb-1">{{ metrics.today_revenue|currency }}</div>
+    <div class="flex items-center gap-1 text-sm">
+      {% if metrics.revenue_trend == 'up' %}
+      <i class="fas fa-arrow-up text-green-400"></i>
+      <span class="text-green-400">+{{ metrics.revenue_delta|currency }}</span>
+      {% else %}
+      <i class="fas fa-arrow-down text-red-400"></i>
+      <span class="text-red-400">-{{ metrics.revenue_delta|currency }}</span>
+      {% endif %}
+      <span class="text-[var(--color-text-muted)]">vs yesterday</span>
+    </div>
+  </div>
+
+  <!-- Completion Rate -->
+  <div class="metric-card">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-sm text-[var(--color-text-muted)]">Completion Rate</span>
+      <div class="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+        <i class="fas fa-chart-pie text-indigo-400"></i>
+      </div>
+    </div>
+    <div class="text-3xl font-black text-white mb-1">{{ metrics.completion_rate }}%</div>
+    <div class="w-full bg-gray-700 rounded-full h-2 mt-2">
+      <div class="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full" style="width: {{ metrics.completion_rate }}%"></div>
+    </div>
+    <p class="text-xs text-[var(--color-text-muted)] mt-1">Last 30 days</p>
+  </div>
+
+  <!-- Customers -->
+  <div class="metric-card">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-sm text-[var(--color-text-muted)]">Customers</span>
+      <div class="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center">
+        <i class="fas fa-users text-cyan-400"></i>
+      </div>
+    </div>
+    <div class="flex items-end gap-4">
+      <div>
+        <div class="text-2xl font-black text-white">{{ metrics.new_customers }}</div>
+        <div class="text-xs text-green-400">New</div>
+      </div>
+      <div>
+        <div class="text-2xl font-black text-white">{{ metrics.returning_customers }}</div>
+        <div class="text-xs text-indigo-400">Returning</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- No-Shows -->
+  <div class="metric-card">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-sm text-[var(--color-text-muted)]">No-Shows Today</span>
+      <div class="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
+        <i class="fas fa-user-times text-red-400"></i>
+      </div>
+    </div>
+    <div class="text-3xl font-black text-white mb-1">{{ metrics.no_show_count }}</div>
+    <a href="{% url 'businesses:fill_gap' %}" class="text-xs text-indigo-400 hover:text-indigo-300">
+      → Run Fill the Gap campaign
+    </a>
+  </div>
+</div>
+
+<!-- Today's Queue + Quick Actions -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+  <!-- Today's Queue -->
+  <div class="xl:col-span-2 card p-6">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-lg font-bold">Today's Queue</h2>
+      <a href="{% url 'businesses:calendar' %}" class="text-sm text-indigo-400 hover:text-indigo-300">View Calendar →</a>
+    </div>
+
+    {% if metrics.todays_bookings %}
+    <div class="space-y-3">
+      {% for booking in metrics.todays_bookings %}
+      <div class="flex items-center gap-4 p-4 rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-border)]">
+        <div class="text-center min-w-[60px]">
+          <div class="text-lg font-bold text-white">{{ booking.start_time|time:"g:i" }}</div>
+          <div class="text-xs text-[var(--color-text-muted)]">{{ booking.start_time|time:"A" }}</div>
+        </div>
+        <div class="w-px h-10 bg-[var(--color-border)]"></div>
+        <div class="flex-1">
+          <div class="font-semibold text-white">{{ booking.customer_name }}</div>
+          <div class="text-sm text-[var(--color-text-muted)]">{{ booking.service.name }}{% if booking.staff %} · {{ booking.staff.name }}{% endif %}</div>
+        </div>
+        <span class="badge
+          {% if booking.status == 'confirmed' %}badge-green
+          {% elif booking.status == 'pending' %}badge-yellow
+          {% elif booking.status == 'in_progress' %}badge-blue
+          {% elif booking.status == 'no_show' %}badge-red
+          {% else %}badge-purple{% endif %}">
+          {{ booking.get_status_display }}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-12 text-[var(--color-text-muted)]">
+      <i class="fas fa-calendar-day text-4xl mb-3 opacity-30"></i>
+      <p>No bookings scheduled for today</p>
+      <a href="/b/{{ business.slug }}/" target="_blank" class="text-indigo-400 text-sm mt-2 inline-block">Share your booking link →</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="card p-6">
+    <h2 class="text-lg font-bold mb-5">Quick Actions</h2>
+    <div class="space-y-3">
+      <a href="{% url 'businesses:service_create' %}" class="flex items-center gap-3 p-4 rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-border)] hover:border-indigo-500/50 transition-colors">
+        <div class="w-9 h-9 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+          <i class="fas fa-plus text-indigo-400 text-sm"></i>
+        </div>
+        <span class="text-sm font-medium">Add Service</span>
+      </a>
+      <a href="{% url 'businesses:staff_create' %}" class="flex items-center gap-3 p-4 rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-border)] hover:border-indigo-500/50 transition-colors">
+        <div class="w-9 h-9 rounded-lg bg-purple-500/10 flex items-center justify-center">
+          <i class="fas fa-user-plus text-purple-400 text-sm"></i>
+        </div>
+        <span class="text-sm font-medium">Add Staff Member</span>
+      </a>
+      <a href="{% url 'businesses:settings' %}" class="flex items-center gap-3 p-4 rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-border)] hover:border-indigo-500/50 transition-colors">
+        <div class="w-9 h-9 rounded-lg bg-cyan-500/10 flex items-center justify-center">
+          <i class="fas fa-palette text-cyan-400 text-sm"></i>
+        </div>
+        <span class="text-sm font-medium">Customize Theme</span>
+      </a>
+      <a href="{% url 'businesses:fill_gap' %}" class="flex items-center gap-3 p-4 rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-border)] hover:border-indigo-500/50 transition-colors">
+        <div class="w-9 h-9 rounded-lg bg-yellow-500/10 flex items-center justify-center">
+          <i class="fas fa-bullhorn text-yellow-400 text-sm"></i>
+        </div>
+        <span class="text-sm font-medium">Fill the Gap Campaign</span>
+      </a>
+    </div>
+
+    <!-- Booking Link -->
+    <div class="mt-6 p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+      <p class="text-xs text-indigo-300 font-semibold mb-2">YOUR BOOKING LINK</p>
+      <div class="flex items-center gap-2">
+        <code class="text-xs text-indigo-200 flex-1 truncate">/b/{{ business.slug }}/</code>
+        <button onclick="navigator.clipboard.writeText(window.location.origin+'/b/{{ business.slug }}/')" class="text-indigo-400 hover:text-indigo-300 text-xs">
+          <i class="fas fa-copy"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
