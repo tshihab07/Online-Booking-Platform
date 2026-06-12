@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Set Up Your Business — Bookify{% endblock %}
+{% block theme_css %}
+<style>
+  body { background: #0a0a14; color: #e8eaf6; }
+  .card { background: rgba(26,26,46,0.9); border: 1px solid rgba(99,102,241,0.2); border-radius: 20px; }
+  label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; color: #a5b4fc; }
+  .form-input, .form-select, .form-textarea {
+    background: rgba(15,15,26,0.8); border: 1px solid rgba(99,102,241,0.2);
+    color: #e8eaf6; border-radius: 10px; padding: 12px 16px; width: 100%;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+  }
+  .form-select option { background: #1a1a2e; }
+  .errorlist { color: #f87171; font-size: 13px; margin-top: 4px; list-style: none; padding: 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center px-4 py-12"
+     style="background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.2) 0%, transparent 60%), #0a0a14;">
+  <div class="w-full max-w-xl">
+    <div class="text-center mb-8">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-store text-white text-xl"></i>
+      </div>
+      <h1 class="text-3xl font-bold text-white">Set Up Your Business</h1>
+      <p class="text-gray-400 mt-2">Tell us about your business to get started</p>
+    </div>
+
+    <div class="card p-8">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div class="sm:col-span-2">
+            <label>Business Name *</label>
+            {{ form.name }}
+            {{ form.name.errors }}
+          </div>
+          <div class="sm:col-span-2">
+            <label>Business Type *</label>
+            {{ form.business_type }}
+            {{ form.business_type.errors }}
+          </div>
+          <div>
+            <label>Email *</label>
+            {{ form.email }}
+            {{ form.email.errors }}
+          </div>
+          <div>
+            <label>Phone *</label>
+            {{ form.phone }}
+            {{ form.phone.errors }}
+          </div>
+          <div class="sm:col-span-2">
+            <label>Address</label>
+            {{ form.address }}
+            {{ form.address.errors }}
+          </div>
+          <div class="sm:col-span-2">
+            <label>Description</label>
+            {{ form.description }}
+            {{ form.description.errors }}
+          </div>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+          {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <button type="submit" class="mt-6 w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3 rounded-xl font-semibold text-base hover:opacity-90 transition-opacity">
+          Create Business & Continue →
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
