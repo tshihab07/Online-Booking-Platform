@@ -1,0 +1,49 @@
+{% extends 'base_dashboard.html' %}
+{% load booking_tags %}
+{% block page_title %}All Time Booking{% endblock %}
+{% block page_subtitle %}Complete booking history for {{ business.name }}{% endblock %}
+
+{% block header_actions %}
+<form method="get">
+  <select name="status" onchange="this.form.submit()" class="form-select text-sm">
+    <option value="">All statuses</option>
+    {% for value,label in statuses %}
+    <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+</form>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="card overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-[var(--color-surface-2)] text-[var(--color-text-muted)]">
+      <tr>
+        <th class="text-left px-5 py-3">Customer</th>
+        <th class="text-left px-5 py-3">Service</th>
+        <th class="text-left px-5 py-3">Date</th>
+        <th class="text-left px-5 py-3">Status</th>
+        <th class="text-left px-5 py-3">Payment</th>
+        <th class="text-right px-5 py-3">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for booking in bookings %}
+      <tr class="table-row border-t border-[var(--color-border)]">
+        <td class="px-5 py-4">
+          <div class="font-semibold text-white">{{ booking.customer_name }}</div>
+          <div class="text-xs text-[var(--color-text-muted)]">{{ booking.customer_email }}</div>
+        </td>
+        <td class="px-5 py-4">{{ booking.service.name }}{% if booking.staff %}<div class="text-xs text-[var(--color-text-muted)]">{{ booking.staff.name }}</div>{% endif %}</td>
+        <td class="px-5 py-4">{{ booking.date|date:"M d, Y" }} at {{ booking.start_time|time:"g:i A" }}</td>
+        <td class="px-5 py-4"><span class="badge badge-blue">{{ booking.get_status_display }}</span></td>
+        <td class="px-5 py-4">{{ booking.payment_status|title }}</td>
+        <td class="px-5 py-4 text-right">{{ booking.amount|currency }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="px-5 py-12 text-center text-[var(--color-text-muted)]">No bookings found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
