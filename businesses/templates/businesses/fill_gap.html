@@ -1,0 +1,91 @@
+{% extends 'base_dashboard.html' %}
+{% load booking_tags %}
+{% block page_title %}Fill the Gap{% endblock %}
+{% block page_subtitle %}Re-engage customers and fill empty slots{% endblock %}
+
+{% block dashboard_content %}
+<div class="grid xl:grid-cols-3 gap-6">
+
+  <!-- Gap Analysis -->
+  <div class="xl:col-span-2 space-y-5">
+    <div class="card p-6">
+      <div class="flex items-center gap-4 mb-5">
+        <div class="w-12 h-12 rounded-xl bg-yellow-500/10 flex items-center justify-center">
+          <i class="fas fa-search text-yellow-400 text-xl"></i>
+        </div>
+        <div>
+          <h2 class="text-lg font-bold">Empty Slots — Next 3 Days</h2>
+          <p class="text-sm" style="color: var(--color-text-muted);">Identified gaps in your schedule</p>
+        </div>
+      </div>
+
+      {% if gaps %}
+      <div class="space-y-4">
+        {% for gap in gaps %}
+        <div class="p-4 rounded-xl border" style="border-color: var(--color-border); background: var(--color-surface-2);">
+          <div class="flex items-center justify-between mb-3">
+            <div class="font-semibold">{{ gap.date|date:"l, F j" }}</div>
+            <span class="badge badge-yellow">{{ gap.empty_slots }} empty slots</span>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            {% for start, end in gap.slots %}
+            <span class="time-pill text-xs py-1 px-3">{{ start|time:"g:i A" }}</span>
+            {% endfor %}
+            {% if gap.empty_slots > 3 %}
+            <span class="text-xs" style="color: var(--color-text-muted);">+{{ gap.empty_slots|add:"-3" }} more</span>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-10">
+        <i class="fas fa-calendar-check text-4xl mb-3 text-green-400"></i>
+        <p class="font-semibold text-green-400">Great news! No gaps found.</p>
+        <p class="text-sm mt-1" style="color: var(--color-text-muted);">Your schedule is fully booked for the next 3 days.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Campaign Action -->
+  <div class="xl:col-span-1 space-y-5">
+    <div class="card p-6">
+      <div class="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center mb-4">
+        <i class="fas fa-bullhorn text-indigo-400 text-xl"></i>
+      </div>
+      <h3 class="font-bold text-lg mb-2">Send Re-engagement Campaign</h3>
+      <p class="text-sm mb-5" style="color: var(--color-text-muted);">
+        Send a personalized "We miss you" email with a one-click rebook link to your last 50 customers.
+      </p>
+
+      <div class="p-4 rounded-xl mb-5" style="background: var(--color-surface-2); border: 1px solid var(--color-border);">
+        <div class="text-xs font-semibold mb-2" style="color: var(--color-text-muted);">WHAT GETS SENT</div>
+        <ul class="text-sm space-y-1.5" style="color: var(--color-text-muted);">
+          <li class="flex items-center gap-2"><i class="fas fa-check text-green-400 text-xs"></i> Personalized greeting</li>
+          <li class="flex items-center gap-2"><i class="fas fa-check text-green-400 text-xs"></i> One-click rebook link</li>
+          <li class="flex items-center gap-2"><i class="fas fa-check text-green-400 text-xs"></i> Your business branding</li>
+        </ul>
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn-primary w-full justify-center"
+                onclick="return confirm('Send re-engagement emails to up to 50 recent customers?')">
+          <i class="fas fa-paper-plane"></i> Send Campaign Now
+        </button>
+      </form>
+    </div>
+
+    <!-- Tips -->
+    <div class="card p-5">
+      <h3 class="font-semibold mb-3 text-sm">💡 Pro Tips</h3>
+      <ul class="text-sm space-y-2" style="color: var(--color-text-muted);">
+        <li>• Send campaigns on Tuesday–Thursday for best open rates</li>
+        <li>• Customers who visited 30–60 days ago respond best</li>
+        <li>• Add a discount code in your custom CSS for higher conversion</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
