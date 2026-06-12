@@ -37,7 +37,6 @@ class Migration(migrations.Migration):
                 ('max_booking_per_slot', models.IntegerField(default=1)),
                 ('buffer_time', models.IntegerField(default=0)),
                 ('stripe_account_id', models.CharField(blank=True, max_length=100)),
-                ('twilio_phone', models.CharField(blank=True, max_length=20)),
                 ('google_calendar_enabled', models.BooleanField(default=False)),
                 ('team_members', models.JSONField(default=list)),
                 ('plan', models.CharField(default='free', max_length=20)),
