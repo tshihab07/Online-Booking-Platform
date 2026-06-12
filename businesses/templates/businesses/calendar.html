@@ -1,0 +1,137 @@
+{% extends 'base_dashboard.html' %}
+{% block page_title %}Booking Calendar{% endblock %}
+{% block page_subtitle %}Drag, drop and manage all appointments{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="grid xl:grid-cols-4 gap-6">
+
+  <!-- Calendar -->
+  <div class="xl:col-span-3 card p-5">
+    <div id="calendar"></div>
+  </div>
+
+  <!-- Sidebar: Booking Detail -->
+  <div class="xl:col-span-1 space-y-4">
+
+    <!-- Legend -->
+    <div class="card p-4">
+      <h3 class="font-semibold text-sm mb-3">Status Legend</h3>
+      <div class="space-y-2 text-sm">
+        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-green-500"></span> Confirmed</div>
+        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-yellow-500"></span> Pending</div>
+        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-500"></span> In Progress</div>
+        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-indigo-500"></span> Completed</div>
+        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500"></span> Cancelled / No-show</div>
+      </div>
+    </div>
+
+    <!-- Booking Detail Panel -->
+    <div class="card p-4" id="booking-detail" style="display:none;">
+      <h3 class="font-semibold mb-3">Booking Details</h3>
+      <div class="space-y-2 text-sm" id="detail-content"></div>
+      <div class="mt-4">
+        <label class="block text-xs font-semibold mb-1.5" style="color: var(--color-text-muted);">Update Status</label>
+        <select id="status-select" class="form-select text-sm mb-2">
+          <option value="pending">Pending</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="no_show">No Show</option>
+        </select>
+        <button onclick="updateStatus()" class="btn-primary w-full justify-center text-sm py-2">
+          Update Status
+        </button>
+      </div>
+    </div>
+
+    <!-- Today's Stats -->
+    <div class="card p-4">
+      <h3 class="font-semibold text-sm mb-3">Today</h3>
+      <div class="text-3xl font-black mb-1">{{ bookings|length }}</div>
+      <p class="text-sm" style="color: var(--color-text-muted);">appointments scheduled</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+<script>
+let selectedBookingId = null;
+const CSRF = document.cookie.match('csrftoken=([^;]+)')?.[1] || '';
+
+document.addEventListener('DOMContentLoaded', () => {
+  const cal = new FullCalendar.Calendar(document.getElementById('calendar'), {
+    initialView: 'timeGridWeek',
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
+    },
+    height: 'auto',
+    slotMinTime: '07:00:00',
+    slotMaxTime: '22:00:00',
+    allDaySlot: false,
+    nowIndicator: true,
+    editable: false,
+    eventSources: [{
+      url: '{% url "businesses:calendar_bookings_api" %}',
+      method: 'GET',
+      failure: () => console.error('Failed to load bookings'),
+    }],
+    eventClick(info) {
+      selectedBookingId = info.event.id;
+      const p = info.event.extendedProps;
+      document.getElementById('booking-detail').style.display = 'block';
+      document.getElementById('status-select').value = p.status;
+      document.getElementById('detail-content').innerHTML = `
+        <div class="flex justify-between py-1 border-b" style="border-color:var(--color-border)">
+          <span style="color:var(--color-text-muted)">Customer</span>
+          <span class="font-semibold">${info.event.title.split('—')[0].trim()}</span>
+        </div>
+        <div class="flex justify-between py-1 border-b" style="border-color:var(--color-border)">
+          <span style="color:var(--color-text-muted)">Service</span>
+          <span class="font-semibold">${info.event.title.split('—')[1]?.trim() || ''}</span>
+        </div>
+        <div class="flex justify-between py-1 border-b" style="border-color:var(--color-border)">
+          <span style="color:var(--color-text-muted)">Staff</span>
+          <span>${p.staff}</span>
+        </div>
+        <div class="flex justify-between py-1 border-b" style="border-color:var(--color-border)">
+          <span style="color:var(--color-text-muted)">Email</span>
+          <span class="text-xs">${p.customer_email}</span>
+        </div>
+        <div class="flex justify-between py-1 border-b" style="border-color:var(--color-border)">
+          <span style="color:var(--color-text-muted)">Phone</span>
+          <span>${p.customer_phone}</span>
+        </div>
+        <div class="flex justify-between py-1">
+          <span style="color:var(--color-text-muted)">Amount</span>
+          <span class="font-bold" style="color:var(--color-primary)">$${p.amount}</span>
+        </div>
+      `;
+    },
+  });
+  cal.render();
+});
+
+async function updateStatus() {
+  if (!selectedBookingId) return;
+  const status = document.getElementById('status-select').value;
+  const res = await fetch(`/dashboard/calendar/booking/${selectedBookingId}/status/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `status=${status}`,
+  });
+  const data = await res.json();
+  if (data.success) {
+    location.reload();
+  } else {
+    alert(data.error || 'Update failed');
+  }
+}
+</script>
+{% endblock %}
