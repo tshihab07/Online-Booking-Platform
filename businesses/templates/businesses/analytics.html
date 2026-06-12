@@ -1,0 +1,44 @@
+{% extends 'base_dashboard.html' %}
+{% block page_title %}Analytics{% endblock %}
+{% block page_subtitle %}Last 30 days performance overview{% endblock %}
+
+{% block dashboard_content %}
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+  <!-- Revenue Chart -->
+  <div class="card p-6">
+    <h3 class="font-bold mb-1">Revenue (Last 7 Days)</h3>
+    <p class="text-sm mb-4" style="color: var(--color-text-muted);">Daily completed booking revenue</p>
+    <div style="height: 220px;">
+      <canvas id="revenue-chart"></canvas>
+    </div>
+  </div>
+
+  <!-- Status Donut -->
+  <div class="card p-6">
+    <h3 class="font-bold mb-1">Booking Status Breakdown</h3>
+    <p class="text-sm mb-4" style="color: var(--color-text-muted);">Last 30 days</p>
+    <div style="height: 220px;">
+      <canvas id="status-chart"></canvas>
+    </div>
+  </div>
+
+  <!-- Services Bar -->
+  <div class="card p-6 xl:col-span-2">
+    <h3 class="font-bold mb-1">Top Services by Bookings</h3>
+    <p class="text-sm mb-4" style="color: var(--color-text-muted);">Most popular services this month</p>
+    <div style="height: 220px;">
+      <canvas id="service-chart"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="/static/js/dashboard_charts.js"></script>
+<script>
+  DashboardCharts.initRevenueChart('revenue-chart', {{ revenue_by_day }});
+  DashboardCharts.initStatusChart('status-chart', {{ status_counts }});
+  DashboardCharts.initServiceChart('service-chart', {{ by_service }});
+</script>
+{% endblock %}
