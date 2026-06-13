@@ -1,0 +1,58 @@
+{% extends 'base_dashboard.html' %}
+{% block page_title %}{{ action }} Service{% endblock %}
+{% block page_subtitle %}{% if action == 'Add' %}Create a new bookable service{% else %}Update service details{% endif %}{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-2xl">
+  <div class="card p-8">
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Service Name *</label>
+          {{ form.name }}{{ form.name.errors }}
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Description</label>
+          {{ form.description }}{{ form.description.errors }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Duration (minutes) *</label>
+          {{ form.duration }}{{ form.duration.errors }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Price *</label>
+          {{ form.price }}{{ form.price.errors }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Category</label>
+          {{ form.category }}{{ form.category.errors }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Max Capacity</label>
+          {{ form.max_capacity }}{{ form.max_capacity.errors }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Calendar Color</label>
+          {{ form.color }}{{ form.color.errors }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Service Image</label>
+          {{ form.image }}{{ form.image.errors }}
+        </div>
+        <div class="sm:col-span-2 flex items-center gap-3">
+          {{ form.is_active }}
+          <label class="text-sm font-medium">Active (visible to customers)</label>
+        </div>
+      </div>
+
+      <div class="flex gap-3 mt-8">
+        <button type="submit" class="btn-primary">
+          <i class="fas fa-save"></i> {{ action }} Service
+        </button>
+        <a href="{% url 'businesses:services' %}" class="btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
