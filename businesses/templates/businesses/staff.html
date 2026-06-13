@@ -1,0 +1,68 @@
+{% extends 'base_dashboard.html' %}
+{% block page_title %}Staff{% endblock %}
+{% block page_subtitle %}Manage your team members{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'businesses:staff_create' %}" class="btn-primary">
+  <i class="fas fa-user-plus"></i> Add Staff
+</a>
+{% endblock %}
+
+{% block dashboard_content %}
+{% if staff_list %}
+<div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
+  {% for member in staff_list %}
+  <div class="card p-6 flex flex-col">
+    <div class="flex items-center gap-4 mb-4">
+      {% if member.avatar %}
+      <img src="{{ member.avatar.url }}" alt="{{ member.name }}"
+           class="w-14 h-14 rounded-full object-cover border-2" style="border-color: var(--color-primary);">
+      {% else %}
+      <div class="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold text-white"
+           style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));">
+        {{ member.name|first|upper }}
+      </div>
+      {% endif %}
+      <div>
+        <h3 class="font-bold">{{ member.name }}</h3>
+        <p class="text-sm" style="color: var(--color-text-muted);">{{ member.email }}</p>
+      </div>
+    </div>
+
+    {% if member.bio %}
+    <p class="text-sm mb-4 flex-1" style="color: var(--color-text-muted);">{{ member.bio|truncatechars:100 }}</p>
+    {% endif %}
+
+    <div class="flex items-center justify-between mb-4">
+      {% if member.phone %}<span class="text-sm" style="color: var(--color-text-muted);"><i class="fas fa-phone mr-1"></i>{{ member.phone }}</span>{% endif %}
+      <span class="badge {% if member.is_active %}badge-green{% else %}badge-gray{% endif %}">
+        {% if member.is_active %}Active{% else %}Inactive{% endif %}
+      </span>
+    </div>
+
+    <div class="flex gap-2 mt-auto">
+      <a href="{% url 'businesses:staff_edit' member.pk %}" class="btn-secondary flex-1 justify-center text-sm py-2">
+        <i class="fas fa-edit"></i> Edit
+      </a>
+      <form method="post" action="{% url 'businesses:staff_delete' member.pk %}" class="flex-1">
+        {% csrf_token %}
+        <button type="submit" class="btn-danger w-full justify-center text-sm py-2"
+                onclick="return confirm('Remove {{ member.name }}?')">
+          <i class="fas fa-trash"></i> Remove
+        </button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card p-16 text-center">
+  <i class="fas fa-users text-5xl mb-4 opacity-20"></i>
+  <h3 class="text-xl font-bold mb-2">No staff members yet</h3>
+  <p class="mb-6" style="color: var(--color-text-muted);">Add team members so customers can choose who serves them.</p>
+  <a href="{% url 'businesses:staff_create' %}" class="btn-primary">
+    <i class="fas fa-user-plus"></i> Add First Staff Member
+  </a>
+</div>
+{% endif %}
+{% endblock %}
