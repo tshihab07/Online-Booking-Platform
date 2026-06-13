@@ -42,7 +42,6 @@ class Business(models.Model):
     
     # Integrations
     stripe_account_id = models.CharField(max_length=100, blank=True)
-    twilio_phone = models.CharField(max_length=20, blank=True)
     google_calendar_enabled = models.BooleanField(default=False)
     
     # Team
