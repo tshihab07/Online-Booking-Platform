@@ -1,0 +1,258 @@
+{% extends 'base_dashboard.html' %}
+{% load booking_tags %}
+{% block page_title %}Settings & Site Builder{% endblock %}
+{% block page_subtitle %}Customize your booking page appearance{% endblock %}
+
+{% block dashboard_content %}
+<div class="grid xl:grid-cols-3 gap-6">
+
+  <!-- Left: Settings Tabs -->
+  <div class="xl:col-span-2 space-y-6">
+
+    <!-- Theme Picker -->
+    <div class="card p-6">
+      <h2 class="text-lg font-bold mb-1">Choose Theme</h2>
+      <p class="text-sm mb-5" style="color: var(--color-text-muted);">5 themes designed for {{ business.get_business_type_display }}</p>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {% for key, theme in themes %}
+        <button onclick="applyTheme('{{ key }}')"
+                class="theme-btn p-4 rounded-xl border-2 text-left transition-all hover:scale-105
+                       {% if business.theme == key %}border-indigo-500 bg-indigo-500/10{% else %}border-[var(--color-border)] hover:border-indigo-500/50{% endif %}"
+                data-key="{{ key }}">
+          <div class="w-8 h-8 rounded-lg mb-2" style="background: {{ theme.preview_color }};"></div>
+          <div class="font-semibold text-sm">{{ theme.label }}</div>
+          <div class="text-xs mt-0.5" style="color: var(--color-text-muted);">{{ theme.description|truncatechars:40 }}</div>
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Brand Colors -->
+    <div class="card p-6">
+      <h2 class="text-lg font-bold mb-1">Brand Colors</h2>
+      <p class="text-sm mb-5" style="color: var(--color-text-muted);">Override theme colors with your brand palette</p>
+      <div class="grid grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-2" style="color: var(--color-text-muted);">Primary</label>
+          <input type="color" id="color-primary" value="{{ business.brand_colors.primary|default:'#6366f1' }}"
+                 class="w-full h-12 rounded-xl cursor-pointer border-0 p-1" style="background: var(--color-surface-2);">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2" style="color: var(--color-text-muted);">Secondary</label>
+          <input type="color" id="color-secondary" value="{{ business.brand_colors.secondary|default:'#8b5cf6' }}"
+                 class="w-full h-12 rounded-xl cursor-pointer border-0 p-1" style="background: var(--color-surface-2);">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2" style="color: var(--color-text-muted);">Accent</label>
+          <input type="color" id="color-accent" value="{{ business.brand_colors.accent|default:'#06b6d4' }}"
+                 class="w-full h-12 rounded-xl cursor-pointer border-0 p-1" style="background: var(--color-surface-2);">
+        </div>
+      </div>
+      <button onclick="saveColors()" class="btn-primary mt-4">
+        <i class="fas fa-save"></i> Save Colors
+      </button>
+    </div>
+
+    <!-- Working Hours -->
+    <div class="card p-6">
+      <h2 class="text-lg font-bold mb-1">Working Hours</h2>
+      <p class="text-sm mb-5" style="color: var(--color-text-muted);">Set your business operating hours</p>
+      <div class="space-y-3" id="hours-form">
+        {% for day in days %}
+        {% with hours=business.working_hours|get_item:day %}
+        <div class="flex items-center gap-3">
+          <div class="w-24 text-sm font-medium capitalize">{{ day }}</div>
+          <label class="flex items-center gap-2 text-sm">
+            <input type="checkbox" class="form-checkbox day-toggle" data-day="{{ day }}"
+                   {% if hours and not hours.closed %}checked{% endif %}
+                   onchange="toggleDay('{{ day }}', this.checked)">
+            Open
+          </label>
+          <div class="flex items-center gap-2 day-hours-{{ day }} {% if hours and hours.closed %}opacity-30 pointer-events-none{% endif %}">
+            <input type="time" class="form-input w-28 text-sm py-1.5" id="open-{{ day }}"
+                   value="{{ hours.open|default:'09:00' }}">
+            <span class="text-sm" style="color: var(--color-text-muted);">to</span>
+            <input type="time" class="form-input w-28 text-sm py-1.5" id="close-{{ day }}"
+                   value="{{ hours.close|default:'17:00' }}">
+          </div>
+        </div>
+        {% endwith %}
+        {% endfor %}
+      </div>
+      <button onclick="saveHours()" class="btn-primary mt-5">
+        <i class="fas fa-save"></i> Save Hours
+      </button>
+    </div>
+
+    <!-- Business Settings Form -->
+    <div class="card p-6">
+      <h2 class="text-lg font-bold mb-5">Business Settings</h2>
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Business Name</label>
+            {{ form.name }}
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Description</label>
+            {{ form.description }}
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Email</label>
+            {{ form.email }}
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Phone</label>
+            {{ form.phone }}
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Address</label>
+            {{ form.address }}
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Website</label>
+            {{ form.website }}
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Timezone</label>
+            {{ form.timezone }}
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Currency (e.g. USD)</label>
+            {{ form.currency }}
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Booking Lead Time (hours)</label>
+            {{ form.booking_lead_time }}
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Buffer Between Bookings (min)</label>
+            {{ form.buffer_time }}
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Logo</label>
+            {{ form.logo }}
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Hero Image</label>
+            {{ form.hero_image }}
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Custom CSS</label>
+            {{ form.custom_css }}
+          </div>
+        </div>
+        <button type="submit" class="btn-primary mt-6">
+          <i class="fas fa-save"></i> Save Settings
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Right: Live Preview -->
+  <div class="xl:col-span-1">
+    <div class="sticky top-24">
+      <div class="card p-5">
+        <h3 class="font-bold mb-3">Live Preview</h3>
+        <div class="rounded-xl overflow-hidden border" style="border-color: var(--color-border);">
+          <div id="preview-hero" class="h-32 flex items-center justify-center relative"
+               style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));">
+            <div class="text-center text-white">
+              <div class="font-bold text-lg">{{ business.name }}</div>
+              <div class="text-xs opacity-70">{{ business.get_business_type_display }}</div>
+            </div>
+          </div>
+          <div class="p-4" style="background: var(--color-surface);">
+            <div class="h-3 rounded-full mb-2 w-3/4" style="background: var(--color-primary); opacity: 0.3;"></div>
+            <div class="h-2 rounded-full mb-2 w-full" style="background: var(--color-border);"></div>
+            <div class="h-2 rounded-full mb-4 w-2/3" style="background: var(--color-border);"></div>
+            <div class="h-9 rounded-xl w-full flex items-center justify-center text-white text-xs font-bold"
+                 style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));">
+              Book Now
+            </div>
+          </div>
+        </div>
+        <a href="/b/{{ business.slug }}/" target="_blank"
+           class="btn-secondary w-full justify-center mt-3 text-sm">
+          <i class="fas fa-external-link-alt"></i> Open Full Preview
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CSRF = document.cookie.match('csrftoken=([^;]+)')?.[1] || '';
+
+async function applyTheme(key) {
+  const res = await fetch('{% url "businesses:update_theme" %}', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `theme=${key}`,
+  });
+  const data = await res.json();
+  if (data.success) {
+    document.querySelectorAll('.theme-btn').forEach(b => {
+      b.classList.toggle('border-indigo-500', b.dataset.key === key);
+      b.classList.toggle('bg-indigo-500/10', b.dataset.key === key);
+      b.classList.toggle('border-[var(--color-border)]', b.dataset.key !== key);
+    });
+    // Inject new CSS vars
+    let styleEl = document.getElementById('dynamic-theme');
+    if (!styleEl) { styleEl = document.createElement('style'); styleEl.id = 'dynamic-theme'; document.head.appendChild(styleEl); }
+    styleEl.textContent = data.css;
+  }
+}
+
+async function saveColors() {
+  const colors = {
+    primary: document.getElementById('color-primary').value,
+    secondary: document.getElementById('color-secondary').value,
+    accent: document.getElementById('color-accent').value,
+  };
+  const res = await fetch('{% url "businesses:update_brand_colors" %}', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+    body: JSON.stringify(colors),
+  });
+  const data = await res.json();
+  if (data.success) {
+    let styleEl = document.getElementById('dynamic-theme');
+    if (!styleEl) { styleEl = document.createElement('style'); styleEl.id = 'dynamic-theme'; document.head.appendChild(styleEl); }
+    styleEl.textContent = data.css;
+    alert('Colors saved!');
+  }
+}
+
+function toggleDay(day, open) {
+  const el = document.querySelector(`.day-hours-${day}`);
+  if (el) { el.classList.toggle('opacity-30', !open); el.classList.toggle('pointer-events-none', !open); }
+}
+
+async function saveHours() {
+  const days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+  const hours = {};
+  days.forEach(day => {
+    const toggle = document.querySelector(`[data-day="${day}"]`);
+    const open = document.getElementById(`open-${day}`)?.value;
+    const close = document.getElementById(`close-${day}`)?.value;
+    hours[day] = { open: open || '', close: close || '', closed: !toggle?.checked };
+  });
+  const res = await fetch('{% url "businesses:update_working_hours" %}', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+    body: JSON.stringify(hours),
+  });
+  const data = await res.json();
+  if (data.success) alert('Working hours saved!');
+}
+
+// Live color preview
+['primary','secondary','accent'].forEach(c => {
+  document.getElementById(`color-${c}`)?.addEventListener('input', e => {
+    document.documentElement.style.setProperty(`--color-${c}`, e.target.value);
+  });
+});
+</script>
+{% endblock %}
