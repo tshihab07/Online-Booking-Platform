@@ -1,0 +1,42 @@
+{% extends 'base_dashboard.html' %}
+{% block page_title %}{{ action }} Staff Member{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-2xl">
+  <div class="card p-8">
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Full Name *</label>
+          {{ form.name }}{{ form.name.errors }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Email *</label>
+          {{ form.email }}{{ form.email.errors }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Phone</label>
+          {{ form.phone }}{{ form.phone.errors }}
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Bio / Specialization</label>
+          {{ form.bio }}{{ form.bio.errors }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Profile Photo</label>
+          {{ form.avatar }}{{ form.avatar.errors }}
+        </div>
+        <div class="flex items-center gap-3 self-end pb-2">
+          {{ form.is_active }}
+          <label class="text-sm font-medium">Active</label>
+        </div>
+      </div>
+      <div class="flex gap-3 mt-8">
+        <button type="submit" class="btn-primary"><i class="fas fa-save"></i> {{ action }} Staff</button>
+        <a href="{% url 'businesses:staff' %}" class="btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
