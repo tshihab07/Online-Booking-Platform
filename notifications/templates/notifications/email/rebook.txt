@@ -1,0 +1,10 @@
+We Miss You — {{ booking.business.name }}
+
+Hi {{ booking.customer_name }},
+
+It's been a while! We'd love to see you again at {{ booking.business.name }}.
+
+Book your next appointment here:
+{{ rebook_url }}
+
+{{ booking.business.name }}
