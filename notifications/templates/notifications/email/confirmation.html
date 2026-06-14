@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+    .header { background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 40px 32px; text-align: center; }
+    .header h1 { color: #fff; margin: 0; font-size: 28px; font-weight: 700; }
+    .header p { color: rgba(255,255,255,0.85); margin: 8px 0 0; font-size: 16px; }
+    .body { padding: 40px 32px; }
+    .greeting { font-size: 18px; color: #1a1a2e; margin-bottom: 24px; }
+    .detail-card { background: #f8f9ff; border-radius: 10px; padding: 24px; margin: 24px 0; border-left: 4px solid #6366f1; }
+    .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e8e8f0; }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { color: #6b7280; font-size: 14px; }
+    .detail-value { color: #1a1a2e; font-weight: 600; font-size: 14px; }
+    .amount { font-size: 24px; color: #6366f1; font-weight: 700; text-align: center; margin: 24px 0; }
+    .ref { text-align: center; color: #9ca3af; font-size: 12px; margin-top: 24px; }
+    .footer { background: #f8f9ff; padding: 24px 32px; text-align: center; color: #9ca3af; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>✅ Booking Confirmed!</h1>
+      <p>{{ booking.business.name }}</p>
+    </div>
+    <div class="body">
+      <p class="greeting">Dear {{ booking.customer_name }},</p>
+      <p style="color:#4b5563;">Your appointment has been confirmed. Here are your booking details:</p>
+      <div class="detail-card">
+        <div class="detail-row">
+          <span class="detail-label">Service</span>
+          <span class="detail-value">{{ booking.service.name }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Date</span>
+          <span class="detail-value">{{ booking.date|date:"l, F j, Y" }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Time</span>
+          <span class="detail-value">{{ booking.start_time|time:"g:i A" }} – {{ booking.end_time|time:"g:i A" }}</span>
+        </div>
+        {% if booking.staff %}
+        <div class="detail-row">
+          <span class="detail-label">Staff</span>
+          <span class="detail-value">{{ booking.staff.name }}</span>
+        </div>
+        {% endif %}
+        <div class="detail-row">
+          <span class="detail-label">Duration</span>
+          <span class="detail-value">{{ booking.service.duration }} minutes</span>
+        </div>
+      </div>
+      <div class="amount">{{ booking.business.currency }} {{ booking.amount }}</div>
+      <p class="ref">Booking Reference: {{ booking.pk }}</p>
+    </div>
+    <div class="footer">
+      <p>Thank you for choosing <strong>{{ booking.business.name }}</strong></p>
+      <p>{{ booking.business.email }} | {{ booking.business.phone }}</p>
+    </div>
+  </div>
+</body>
+</html>
