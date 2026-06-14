@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 12px; overflow: hidden; }
+    .header { background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 40px 32px; text-align: center; }
+    .header h1 { color: #fff; margin: 0; font-size: 28px; }
+    .body { padding: 40px 32px; text-align: center; }
+    .cta { display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; padding: 16px 40px; border-radius: 50px; text-decoration: none; font-size: 18px; font-weight: 700; margin: 24px 0; }
+    .footer { background: #f8f9ff; padding: 24px 32px; text-align: center; color: #9ca3af; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header"><h1>💜 We Miss You!</h1></div>
+    <div class="body">
+      <p>Hi {{ booking.customer_name }},</p>
+      <p>It's been a while since your last visit to <strong>{{ booking.business.name }}</strong>. We'd love to see you again!</p>
+      <a href="{{ rebook_url }}" class="cta">Book Your Next Appointment →</a>
+      <p style="color:#9ca3af;font-size:13px;">Or copy this link: {{ rebook_url }}</p>
+    </div>
+    <div class="footer"><p>{{ booking.business.name }} | {{ booking.business.email }}</p></div>
+  </div>
+</body>
+</html>
