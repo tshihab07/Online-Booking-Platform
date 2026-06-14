@@ -1,0 +1,13 @@
+Appointment Reminder — {{ booking.business.name }}
+
+Dear {{ booking.customer_name }},
+
+This is a reminder for your upcoming appointment:
+
+Service: {{ booking.service.name }}
+Date: {{ booking.date }}
+Time: {{ booking.start_time }}
+{% if booking.staff %}Staff: {{ booking.staff.name }}{% endif %}
+
+We look forward to seeing you!
+{{ booking.business.name }}
