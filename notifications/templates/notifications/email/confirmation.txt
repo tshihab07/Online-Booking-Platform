@@ -1,0 +1,17 @@
+Booking Confirmed — {{ booking.business.name }}
+
+Dear {{ booking.customer_name }},
+
+Your booking has been confirmed!
+
+Service: {{ booking.service.name }}
+Date: {{ booking.date }}
+Time: {{ booking.start_time }} – {{ booking.end_time }}
+{% if booking.staff %}Staff: {{ booking.staff.name }}{% endif %}
+Duration: {{ booking.service.duration }} minutes
+Amount: {{ booking.business.currency }} {{ booking.amount }}
+
+Booking Reference: {{ booking.pk }}
+
+Thank you for choosing {{ booking.business.name }}!
+{{ booking.business.email }} | {{ booking.business.phone }}
