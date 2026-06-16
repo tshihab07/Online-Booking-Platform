@@ -1,0 +1,73 @@
+{% extends 'platform_admin/base.html' %}
+{% load booking_tags %}
+
+{% block page_title %}Businesses{% endblock %}
+{% block page_subtitle %}Manage all tenant businesses{% endblock %}
+
+{% block admin_content %}
+<!-- Search -->
+<div class="card p-5 mb-6">
+  <form method="get" class="flex flex-wrap gap-4">
+    {{ form.search }}
+    {{ form.business_type }}
+    {{ form.status }}
+    <button type="submit" class="btn-primary">Search</button>
+    <a href="{% url 'platform_admin:businesses' %}" class="btn-secondary">Reset</a>
+  </form>
+</div>
+
+<!-- Businesses Table -->
+<div class="card overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-[var(--color-surface-2)]">
+      <tr>
+        <th class="text-left px-5 py-3 font-semibold">Business</th>
+        <th class="text-left px-5 py-3 font-semibold">Type</th>
+        <th class="text-left px-5 py-3 font-semibold">Plan</th>
+        <th class="text-left px-5 py-3 font-semibold">Status</th>
+        <th class="text-left px-5 py-3 font-semibold">Created</th>
+        <th class="text-right px-5 py-3 font-semibold">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-[var(--color-border)]">
+      {% for business in page_obj %}
+      <tr class="table-row">
+        <td class="px-5 py-4">
+          <a href="{% url 'platform_admin:business_detail' business.pk %}" class="font-semibold text-indigo-300 hover:text-indigo-200">{{ business.name }}</a>
+          <div class="text-xs text-[var(--color-text-muted)]">/b/{{ business.slug }}/</div>
+        </td>
+        <td class="px-5 py-4">{{ business.business_type|title }}</td>
+        <td class="px-5 py-4">
+          <span class="badge badge-purple">{{ business.plan|title }}</span>
+        </td>
+        <td class="px-5 py-4">
+          <span class="badge {% if business.is_active %}badge-green{% else %}badge-red{% endif %}">
+            {% if business.is_active %}Active{% else %}Inactive{% endif %}
+          </span>
+        </td>
+        <td class="px-5 py-4 text-[var(--color-text-muted)]">{{ business.created_at|date:"M d, Y" }}</td>
+        <td class="px-5 py-4 text-right">
+          <a href="{% url 'platform_admin:business_detail' business.pk %}" class="text-indigo-400 hover:text-indigo-300">Manage</a>
+          <a href="/b/{{ business.slug }}/" target="_blank" class="text-[var(--color-text-muted)] hover:text-indigo-300 ml-3">View</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="px-5 py-10 text-center text-[var(--color-text-muted)]">No businesses found</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center gap-2 mt-6">
+  {% if page_obj.has_previous %}
+  <a href="?page={{ page_obj.previous_page_number }}" class="btn-secondary px-4 py-2">← Previous</a>
+  {% endif %}
+  <span class="px-4 py-2 text-[var(--color-text-muted)]">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}" class="btn-secondary px-4 py-2">Next →</a>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}
