@@ -1,0 +1,68 @@
+{% extends 'platform_admin/base.html' %}
+{% load booking_tags %}
+
+{% block page_title %}Payment Details{% endblock %}
+{% block page_subtitle %}{{ payment.user.email }} - {{ payment.plan|title }}{% endblock %}
+
+{% block admin_content %}
+<div class="max-w-2xl">
+  <div class="card p-6 mb-6">
+    <h2 class="font-bold mb-4">Payment Information</h2>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div>
+        <label class="text-xs text-[var(--color-text-muted)]">User</label>
+        <a href="{% url 'platform_admin:user_detail' payment.user.pk %}" class="block font-semibold text-indigo-300">{{ payment.user.email }}</a>
+      </div>
+      <div>
+        <label class="text-xs text-[var(--color-text-muted)]">Business</label>
+        {% if payment.business %}
+        <a href="{% url 'platform_admin:business_detail' payment.business.pk %}" class="block font-semibold text-indigo-300">{{ payment.business.name }}</a>
+        {% else %}<span class="text-[var(--color-text-muted)]">—</span>{% endif %}
+      </div>
+      <div>
+        <label class="text-xs text-[var(--color-text-muted)]">Plan</label>
+        <div class="font-semibold">{{ payment.plan|title }}</div>
+      </div>
+      <div>
+        <label class="text-xs text-[var(--color-text-muted)]">Amount</label>
+        <div class="text-2xl font-black">{{ payment.amount|currency }}</div>
+      </div>
+      <div>
+        <label class="text-xs text-[var(--color-text-muted)]">Status</label>
+        <span class="badge {% if payment.status == 'paid' %}badge-green{% elif payment.status == 'failed' %}badge-red{% else %}badge-yellow{% endif %}">
+          {{ payment.get_status_display }}
+        </span>
+      </div>
+      <div>
+        <label class="text-xs text-[var(--color-text-muted)]">Created</label>
+        <div class="font-semibold">{{ payment.created_at|date:"M d, Y H:i" }}</div>
+      </div>
+      {% if payment.paid_at %}
+      <div>
+        <label class="text-xs text-[var(--color-text-muted)]">Paid At</label>
+        <div class="font-semibold">{{ payment.paid_at|date:"M d, Y H:i" }}</div>
+      </div>
+      {% endif %}
+      {% if payment.stripe_payment_id %}
+      <div class="md:col-span-2">
+        <label class="text-xs text-[var(--color-text-muted)]">Stripe Payment ID</label>
+        <div class="font-mono text-sm">{{ payment.stripe_payment_id }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  
+  {% if payment.status == 'paid' %}
+  <div class="card p-6">
+    <h2 class="font-bold mb-4">Actions</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="refund">
+      <button type="submit" class="btn-secondary text-red-400 border-red-400" onclick="return confirm('Mark this payment as refunded?')">
+        Mark as Refunded
+      </button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
