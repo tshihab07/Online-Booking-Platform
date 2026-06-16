@@ -1,0 +1,57 @@
+{% extends 'platform_admin/base.html' %}
+{% load booking_tags %}
+
+{% block page_title %}Edit Announcement{% endblock %}
+{% block page_subtitle %}{{ announcement.title }}{% endblock %}
+
+{% block admin_content %}
+<div class="max-w-3xl">
+  <div class="card p-6">
+    <form method="post">
+      {% csrf_token %}
+      <div class="grid md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm mb-2">Title</label>
+          {{ form.title }}
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm mb-2">Type</label>
+            {{ form.announcement_type }}
+          </div>
+          <div>
+            <label class="block text-sm mb-2">Status</label>
+            {{ form.status }}
+          </div>
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm mb-2">Message</label>
+        {{ form.message }}
+      </div>
+      <div class="grid md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm mb-2">Publish At</label>
+          {{ form.published_at }}
+        </div>
+        <div>
+          <label class="block text-sm mb-2">Expires At</label>
+          {{ form.expires_at }}
+        </div>
+      </div>
+      <div class="flex items-center gap-4 mb-6">
+        <label class="flex items-center gap-2 cursor-pointer">
+          {{ form.target_all }} <span>Target All Users</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          {{ form.is_dismissible }} <span>Dismissible</span>
+        </label>
+      </div>
+      <div class="flex gap-3">
+        <button type="submit" class="btn-primary">Save Changes</button>
+        <a href="{% url 'platform_admin:announcements' %}" class="btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
