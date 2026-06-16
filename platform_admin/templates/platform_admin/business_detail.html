@@ -1,0 +1,148 @@
+{% extends 'platform_admin/base.html' %}
+{% load booking_tags %}
+
+{% block page_title %}{{ business.name }}{% endblock %}
+{% block page_subtitle %}Business details{% endblock %}
+
+{% block admin_content %}
+<div class="grid xl:grid-cols-3 gap-6">
+  <div class="xl:col-span-2 space-y-6">
+    <!-- Info -->
+    <div class="card p-6">
+      <h2 class="font-bold mb-4">Business Information</h2>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs text-[var(--color-text-muted)]">Name</label>
+          <div class="font-semibold">{{ business.name }}</div>
+        </div>
+        <div>
+          <label class="text-xs text-[var(--color-text-muted)]">Slug</label>
+          <div class="font-semibold">/b/{{ business.slug }}/</div>
+        </div>
+        <div>
+          <label class="text-xs text-[var(--color-text-muted)]">Type</label>
+          <div class="font-semibold">{{ business.business_type|title }}</div>
+        </div>
+        <div>
+          <label class="text-xs text-[var(--color-text-muted)]">Email</label>
+          <div class="font-semibold">{{ business.email }}</div>
+        </div>
+        <div>
+          <label class="text-xs text-[var(--color-text-muted)]">Phone</label>
+          <div class="font-semibold">{{ business.phone|default:"—" }}</div>
+        </div>
+        <div>
+          <label class="text-xs text-[var(--color-text-muted)]">Plan</label>
+          <span class="badge badge-purple">{{ business.plan|title }}</span>
+        </div>
+        <div>
+          <label class="text-xs text-[var(--color-text-muted)]">Status</label>
+          <span class="badge {% if business.is_active %}badge-green{% else %}badge-red{% endif %}">
+            {% if business.is_active %}Active{% else %}Inactive{% endif %}
+          </span>
+        </div>
+        <div>
+          <label class="text-xs text-[var(--color-text-muted)]">Created</label>
+          <div class="font-semibold">{{ business.created_at|date:"M d, Y" }}</div>
+        </div>
+      </div>
+      {% if business.address %}
+      <div class="mt-4">
+        <label class="text-xs text-[var(--color-text-muted)]">Address</label>
+        <div class="font-semibold">{{ business.address }}</div>
+      </div>
+      {% endif %}
+    </div>
+    
+    <!-- Actions -->
+    <div class="card p-6">
+      <h2 class="font-bold mb-4">Actions</h2>
+      <form method="post" class="flex gap-3">
+        {% csrf_token %}
+        {% if business.is_active %}
+        <input type="hidden" name="action" value="deactivate">
+        <button type="submit" class="btn-secondary text-red-400 border-red-400">Deactivate Business</button>
+        {% else %}
+        <input type="hidden" name="action" value="activate">
+        <button type="submit" class="btn-primary">Activate Business</button>
+        {% endif %}
+      </form>
+      <div class="mt-4">
+        <a href="/b/{{ business.slug }}/" target="_blank" class="btn-secondary inline-block">View Public Page</a>
+      </div>
+    </div>
+    
+    <!-- Services -->
+    <div class="card p-6">
+      <h2 class="font-bold mb-4">Services ({{ services|length }})</h2>
+      <div class="grid md:grid-cols-2 gap-3">
+        {% for service in services %}
+        <div class="p-3 bg-[var(--color-surface-2)] rounded-lg">
+          <div class="font-semibold">{{ service.name }}</div>
+          <div class="text-xs text-[var(--color-text-muted)]">{{ service.duration }} min · {{ service.price|currency }}</div>
+        </div>
+        {% empty %}
+        <p class="text-[var(--color-text-muted)]">No services</p>
+        {% endfor %}
+      </div>
+    </div>
+    
+    <!-- Staff -->
+    <div class="card p-6">
+      <h2 class="font-bold mb-4">Staff ({{ staff|length }})</h2>
+      <div class="grid md:grid-cols-2 gap-3">
+        {% for member in staff %}
+        <div class="p-3 bg-[var(--color-surface-2)] rounded-lg">
+          <div class="font-semibold">{{ member.name }}</div>
+          <div class="text-xs text-[var(--color-text-muted)]">{{ member.email }}</div>
+        </div>
+        {% empty %}
+        <p class="text-[var(--color-text-muted)]">No staff members</p>
+        {% endfor %}
+      </div>
+    </div>
+    
+    <!-- Recent Bookings -->
+    <div class="card p-6">
+      <h2 class="font-bold mb-4">Recent Bookings</h2>
+      <div class="space-y-2">
+        {% for booking in bookings %}
+        <div class="flex items-center justify-between p-3 bg-[var(--color-surface-2)] rounded-lg">
+          <div>
+            <div class="font-semibold">{{ booking.customer_name }}</div>
+            <div class="text-xs text-[var(--color-text-muted)]">{{ booking.service.name }} · {{ booking.date }}</div>
+          </div>
+          <span class="badge badge-blue">{{ booking.status }}</span>
+        </div>
+        {% empty %}
+        <p class="text-[var(--color-text-muted)]">No bookings yet</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  
+  <!-- Sidebar -->
+  <div class="space-y-6">
+    {% if owner %}
+    <div class="card p-6">
+      <h2 class="font-bold mb-4">Owner</h2>
+      <p class="text-sm mb-3">{{ owner.email }}</p>
+      <a href="{% url 'platform_admin:impersonate_user' owner.pk %}" class="btn-secondary w-full text-center block">
+        <i class="fas fa-user-secret mr-2"></i> Impersonate Owner
+      </a>
+      <a href="{% url 'platform_admin:user_detail' owner.pk %}" class="btn-secondary w-full text-center block mt-2">Manage User</a>
+    </div>
+    {% endif %}
+    <div class="card p-6">
+      <h2 class="font-bold mb-4">Theme</h2>
+      <div class="text-sm">{{ business.theme }}</div>
+    </div>
+    <div class="card p-6">
+      <h2 class="font-bold mb-4">Integrations</h2>
+      <div class="text-sm text-[var(--color-text-muted)]">
+        {% if business.stripe_account_id %}✓ Stripe connected{% else %}No Stripe{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
