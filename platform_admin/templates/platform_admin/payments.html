@@ -1,0 +1,85 @@
+{% extends 'platform_admin/base.html' %}
+{% load booking_tags %}
+
+{% block page_title %}Payments{% endblock %}
+{% block page_subtitle %}View all subscription payments{% endblock %}
+
+{% block admin_content %}
+<!-- Filters -->
+<div class="card p-5 mb-6">
+  <form method="get" class="flex gap-4">
+    <select name="status" class="form-select">
+      <option value="">All Status</option>
+      <option value="pending" {% if status == 'pending' %}selected{% endif %}>Pending</option>
+      <option value="paid" {% if status == 'paid' %}selected{% endif %}>Paid</option>
+      <option value="failed" {% if status == 'failed' %}selected{% endif %}>Failed</option>
+      <option value="refunded" {% if status == 'refunded' %}selected{% endif %}>Refunded</option>
+    </select>
+    <button type="submit" class="btn-primary">Filter</button>
+    <a href="{% url 'platform_admin:payments' %}" class="btn-secondary">Reset</a>
+  </form>
+</div>
+
+<!-- Payments Table -->
+<div class="card overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-[var(--color-surface-2)]">
+      <tr>
+        <th class="text-left px-5 py-3 font-semibold">User</th>
+        <th class="text-left px-5 py-3 font-semibold">Business</th>
+        <th class="text-left px-5 py-3 font-semibold">Plan</th>
+        <th class="text-left px-5 py-3 font-semibold">Amount</th>
+        <th class="text-left px-5 py-3 font-semibold">Status</th>
+        <th class="text-left px-5 py-3 font-semibold">Date</th>
+        <th class="text-right px-5 py-3 font-semibold">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-[var(--color-border)]">
+      {% for payment in page_obj %}
+      <tr class="table-row">
+        <td class="px-5 py-4">
+          <a href="{% url 'platform_admin:user_detail' payment.user.pk %}" class="text-indigo-300 hover:text-indigo-200">
+            {{ payment.user.email }}
+          </a>
+        </td>
+        <td class="px-5 py-4">
+          {% if payment.business %}
+          <a href="{% url 'platform_admin:business_detail' payment.business.pk %}" class="text-indigo-300">
+            {{ payment.business.name }}
+          </a>
+          {% else %}—{% endif %}
+        </td>
+        <td class="px-5 py-4">
+          <span class="badge badge-purple">{{ payment.plan|title }}</span>
+        </td>
+        <td class="px-5 py-4 font-semibold">{{ payment.amount|currency }}</td>
+        <td class="px-5 py-4">
+          <span class="badge {% if payment.status == 'paid' %}badge-green{% elif payment.status == 'failed' %}badge-red{% elif payment.status == 'refunded' %}badge-blue{% else %}badge-yellow{% endif %}">
+            {{ payment.get_status_display }}
+          </span>
+        </td>
+        <td class="px-5 py-4 text-[var(--color-text-muted)]">{{ payment.created_at|date:"M d, Y" }}</td>
+        <td class="px-5 py-4 text-right">
+          <a href="{% url 'platform_admin:payment_detail' payment.pk %}" class="text-indigo-400 hover:text-indigo-300">View</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="px-5 py-10 text-center text-[var(--color-text-muted)]">No payments found</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center gap-2 mt-6">
+  {% if page_obj.has_previous %}
+  <a href="?page={{ page_obj.previous_page_number }}{% if status %}&status={{ status }}{% endif %}" class="btn-secondary px-4 py-2">← Previous</a>
+  {% endif %}
+  <span class="px-4 py-2 text-[var(--color-text-muted)]">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}{% if status %}&status={{ status }}{% endif %}" class="btn-secondary px-4 py-2">Next →</a>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}
