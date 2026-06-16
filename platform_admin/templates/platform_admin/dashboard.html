@@ -1,0 +1,169 @@
+{% extends 'platform_admin/base.html' %}
+{% load booking_tags %}
+
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Platform overview and metrics{% endblock %}
+
+{% block admin_content %}
+<!-- Metrics Cards -->
+<div class="grid md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+  <div class="metric-card">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-sm text-[var(--color-text-muted)]">Total Users</span>
+      <i class="fas fa-users text-indigo-400"></i>
+    </div>
+    <div class="text-3xl font-black">{{ metrics.total_users }}</div>
+    <div class="text-xs text-green-400 mt-1">{{ metrics.today_signups }} today</div>
+  </div>
+  <div class="metric-card">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-sm text-[var(--color-text-muted)]">Active Businesses</span>
+      <i class="fas fa-building text-green-400"></i>
+    </div>
+    <div class="text-3xl font-black">{{ metrics.active_businesses }}</div>
+    <div class="text-xs text-[var(--color-text-muted)] mt-1">{{ metrics.total_businesses }} total</div>
+  </div>
+  <div class="metric-card">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-sm text-[var(--color-text-muted)]">Monthly Revenue</span>
+      <i class="fas fa-dollar-sign text-emerald-400"></i>
+    </div>
+    <div class="text-3xl font-black">{{ metrics.month_revenue|currency }}</div>
+    <div class="text-xs text-[var(--color-text-muted)] mt-1">{{ metrics.total_revenue|currency }} total</div>
+  </div>
+  <div class="metric-card">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-sm text-[var(--color-text-muted)]">Open Tickets</span>
+      <i class="fas fa-headset text-amber-400"></i>
+    </div>
+    <div class="text-3xl font-black">{{ metrics.open_tickets }}</div>
+    <div class="text-xs text-[var(--color-text-muted)] mt-1">{{ metrics.pending_users }} pending users</div>
+  </div>
+</div>
+
+<!-- Charts Row -->
+<div class="grid xl:grid-cols-3 gap-6 mb-8">
+  <!-- Plan Distribution -->
+  <div class="card p-6">
+    <h3 class="font-bold mb-4">Plan Distribution</h3>
+    <div class="space-y-3">
+      {% for tier, count in plan_distribution.items %}
+      <div class="flex items-center justify-between">
+        <span class="text-sm">{{ tier|title }}</span>
+        <div class="flex items-center gap-3">
+          <div class="w-32 h-2 bg-[var(--color-surface-2)] rounded-full overflow-hidden">
+            <div class="h-full bg-indigo-500 rounded-full" style="width: {% widthratio count metrics.total_businesses 100 %}%"></div>
+          </div>
+          <span class="text-sm font-semibold">{{ count }}</span>
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-sm text-[var(--color-text-muted)]">No data yet</p>
+      {% endfor %}
+    </div>
+  </div>
+  
+  <!-- Bookings This Month -->
+  <div class="card p-6">
+    <h3 class="font-bold mb-4">Bookings</h3>
+    <div class="text-center py-4">
+      <div class="text-5xl font-black text-indigo-400">{{ metrics.month_bookings }}</div>
+      <div class="text-sm text-[var(--color-text-muted)] mt-1">This month</div>
+    </div>
+    <div class="text-center border-t border-[var(--color-border)] pt-4 mt-4">
+      <div class="text-2xl font-bold">{{ metrics.total_bookings }}</div>
+      <div class="text-xs text-[var(--color-text-muted)]">All time</div>
+    </div>
+  </div>
+  
+  <!-- Quick Actions -->
+  <div class="card p-6">
+    <h3 class="font-bold mb-4">Quick Actions</h3>
+    <div class="space-y-2">
+      <a href="{% url 'platform_admin:users' %}?status=pending" class="block p-3 rounded-lg bg-[var(--color-surface-2)] hover:bg-indigo-500/10 transition-colors">
+        <i class="fas fa-user-clock mr-2"></i> Review {{ metrics.pending_users }} Pending Users
+      </a>
+      <a href="{% url 'platform_admin:support' %}?status=open" class="block p-3 rounded-lg bg-[var(--color-surface-2)] hover:bg-indigo-500/10 transition-colors">
+        <i class="fas fa-life-ring mr-2"></i> Handle {{ metrics.open_tickets }} Open Tickets
+      </a>
+      <a href="{% url 'platform_admin:announcements' %}" class="block p-3 rounded-lg bg-[var(--color-surface-2)] hover:bg-indigo-500/10 transition-colors">
+        <i class="fas fa-bullhorn mr-2"></i> Create Announcement
+      </a>
+      <a href="{% url 'platform_admin:plans' %}" class="block p-3 rounded-lg bg-[var(--color-surface-2)] hover:bg-indigo-500/10 transition-colors">
+        <i class="fas fa-tags mr-2"></i> Manage Plans
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="grid xl:grid-cols-2 gap-6">
+  <!-- Recent Users -->
+  <div class="card overflow-hidden">
+    <div class="p-5 flex items-center justify-between border-b border-[var(--color-border)]">
+      <h2 class="font-bold">Recent Users</h2>
+      <a class="text-sm text-indigo-400" href="{% url 'platform_admin:users' %}">View all</a>
+    </div>
+    <div class="divide-y divide-[var(--color-border)]">
+      {% for user in recent_users %}
+      <a href="{% url 'platform_admin:user_detail' user.pk %}" class="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+        <div>
+          <div class="font-semibold">{{ user.email }}</div>
+          <div class="text-xs text-[var(--color-text-muted)]">{{ user.created_at|date:"M d, Y H:i" }}</div>
+        </div>
+        <span class="badge {% if user.account_status == 'approved' %}badge-green{% elif user.account_status == 'pending' %}badge-yellow{% else %}badge-red{% endif %}">{{ user.get_account_status_display }}</span>
+      </a>
+      {% empty %}
+      <div class="p-8 text-center text-[var(--color-text-muted)]">No users yet</div>
+      {% endfor %}
+    </div>
+  </div>
+  
+  <!-- Recent Payments -->
+  <div class="card overflow-hidden">
+    <div class="p-5 flex items-center justify-between border-b border-[var(--color-border)]">
+      <h2 class="font-bold">Recent Payments</h2>
+      <a class="text-sm text-indigo-400" href="{% url 'platform_admin:payments' %}">View all</a>
+    </div>
+    <div class="divide-y divide-[var(--color-border)]">
+      {% for payment in recent_payments %}
+      <a href="{% url 'platform_admin:payment_detail' payment.pk %}" class="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+        <div>
+          <div class="font-semibold">{{ payment.user.email }}</div>
+          <div class="text-xs text-[var(--color-text-muted)]">{{ payment.plan|title }} · {{ payment.created_at|date:"M d, Y" }}</div>
+        </div>
+        <div class="text-right">
+          <div class="font-semibold">{{ payment.amount|currency }}</div>
+          <span class="badge {% if payment.status == 'paid' %}badge-green{% else %}badge-yellow{% endif %}">{{ payment.get_status_display }}</span>
+        </div>
+      </a>
+      {% empty %}
+      <div class="p-8 text-center text-[var(--color-text-muted)]">No payments yet</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Audit Log -->
+<div class="mt-6">
+  <div class="card overflow-hidden">
+    <div class="p-5 flex items-center justify-between border-b border-[var(--color-border)]">
+      <h2 class="font-bold">Recent Activity</h2>
+      <a class="text-sm text-indigo-400" href="{% url 'platform_admin:audit_logs' %}">View all</a>
+    </div>
+    <div class="divide-y divide-[var(--color-border)]">
+      {% for log in recent_logs %}
+      <div class="flex items-center justify-between p-4">
+        <div>
+          <div class="font-semibold">{{ log.get_action_display }}</div>
+          <div class="text-xs text-[var(--color-text-muted)]">by {{ log.admin_user.email }}</div>
+        </div>
+        <div class="text-xs text-[var(--color-text-muted)]">{{ log.created_at|date:"M d, H:i" }}</div>
+      </div>
+      {% empty %}
+      <div class="p-8 text-center text-[var(--color-text-muted)]">No activity yet</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
