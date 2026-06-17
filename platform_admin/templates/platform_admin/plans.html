@@ -1,0 +1,102 @@
+{% extends 'platform_admin/base.html' %}
+{% load booking_tags %}
+
+{% block page_title %}Plans & Limits{% endblock %}
+{% block page_subtitle %}Manage subscription plans and feature limits{% endblock %}
+
+{% block admin_content %}
+<div class="grid xl:grid-cols-4 gap-6">
+  {% for plan in plans %}
+  <div class="card p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-bold text-lg">{{ plan.name }}</h3>
+      <span class="badge badge-purple">{{ plan.tier }}</span>
+    </div>
+    <div class="text-3xl font-black mb-4">${{ plan.price }}<span class="text-sm font-normal text-[var(--color-text-muted)]">/mo</span></div>
+    
+    <div class="space-y-2 mb-6 text-sm">
+      <div class="flex justify-between">
+        <span class="text-[var(--color-text-muted)]">Max Businesses</span>
+        <span class="font-semibold">{{ plan.max_businesses }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-[var(--color-text-muted)]">Max Services</span>
+        <span class="font-semibold">{{ plan.max_services }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-[var(--color-text-muted)]">Max Staff</span>
+        <span class="font-semibold">{{ plan.max_staff }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-[var(--color-text-muted)]">Bookings/Month</span>
+        <span class="font-semibold">{{ plan.max_bookings_per_month }}</span>
+      </div>
+    </div>
+    
+    <div class="space-y-2 mb-6 text-sm">
+      <div class="flex items-center gap-2">
+        <i class="fas {% if plan.custom_themes %}fa-check text-green-400{% else %}fa-times text-red-400{% endif %} w-4"></i>
+        <span>Custom Themes</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <i class="fas {% if plan.analytics_enabled %}fa-check text-green-400{% else %}fa-times text-red-400{% endif %} w-4"></i>
+        <span>Analytics</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <i class="fas {% if plan.api_access %}fa-check text-green-400{% else %}fa-times text-red-400{% endif %} w-4"></i>
+        <span>API Access</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <i class="fas {% if plan.priority_support %}fa-check text-green-400{% else %}fa-times text-red-400{% endif %} w-4"></i>
+        <span>Priority Support</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <i class="fas {% if plan.custom_domain %}fa-check text-green-400{% else %}fa-times text-red-400{% endif %} w-4"></i>
+        <span>Custom Domain</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <i class="fas {% if plan.remove_branding %}fa-check text-green-400{% else %}fa-times text-red-400{% endif %} w-4"></i>
+        <span>Remove Branding</span>
+      </div>
+    </div>
+    
+    <a href="{% url 'platform_admin:plan_edit' plan.pk %}" class="btn-secondary w-full text-center block">Edit Plan</a>
+  </div>
+  {% empty %}
+  <div class="xl:col-span-4 card p-10 text-center">
+    <p class="text-[var(--color-text-muted)]">No plans configured. Create default plans:</p>
+    <form method="post" class="mt-4">
+      {% csrf_token %}
+      <button type="submit" name="create_defaults" value="1" class="btn-primary">Create Default Plans</button>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Add New Plan -->
+<div class="mt-8">
+  <div class="card p-6">
+    <h2 class="font-bold mb-4">Create New Plan</h2>
+    <form method="post">
+      {% csrf_token %}
+      <div class="grid md:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-sm mb-2">Name</label>
+          {{ form.name }}
+        </div>
+        <div>
+          <label class="block text-sm mb-2">Tier</label>
+          {{ form.tier }}
+        </div>
+        <div>
+          <label class="block text-sm mb-2">Price</label>
+          {{ form.price }}
+        </div>
+        <div class="flex items-end">
+          <button type="submit" class="btn-primary">Create Plan</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
