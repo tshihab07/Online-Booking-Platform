@@ -1,0 +1,69 @@
+{% extends 'platform_admin/base.html' %}
+{% load booking_tags %}
+
+{% block page_title %}Ticket: {{ ticket.subject }}{% endblock %}
+{% block page_subtitle %}{{ ticket.user.email }}{% endblock %}
+
+{% block admin_content %}
+<div class="grid xl:grid-cols-3 gap-6">
+  <div class="xl:col-span-2">
+    <!-- Ticket Info -->
+    <div class="card p-6 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-bold text-lg">{{ ticket.subject }}</h2>
+        <span class="badge {% if ticket.status == 'open' %}badge-yellow{% elif ticket.status == 'in_progress' %}badge-blue{% elif ticket.status == 'resolved' %}badge-green{% else %}badge-purple{% endif %}">
+          {{ ticket.get_status_display }}
+        </span>
+      </div>
+      <div class="flex gap-4 mb-4 text-sm">
+        <div>
+          <span class="text-[var(--color-text-muted)]">Priority:</span>
+          <span class="badge {% if ticket.priority == 'urgent' %}badge-red{% elif ticket.priority == 'high' %}badge-yellow{% else %}badge-blue{% endif %}">
+            {{ ticket.get_priority_display }}
+          </span>
+        </div>
+        <div>
+          <span class="text-[var(--color-text-muted)]">Created:</span>
+          {{ ticket.created_at|date:"M d, Y H:i" }}
+        </div>
+      </div>
+      <div class="p-4 bg-[var(--color-surface-2)] rounded-lg whitespace-pre-wrap">{{ ticket.message }}</div>
+    </div>
+    
+    <!-- Admin Response -->
+    <div class="card p-6">
+      <h3 class="font-bold mb-4">Admin Response</h3>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="respond">
+        <div class="mb-4">
+          <label class="block text-sm mb-2">Response</label>
+          <textarea name="admin_response" class="form-textarea" rows="5">{{ ticket.admin_response }}</textarea>
+        </div>
+        <div class="flex gap-4 mb-4">
+          <div>
+            <label class="block text-sm mb-2">Update Status</label>
+            <select name="status" class="form-select">
+              {% for value, label in ticket.STATUS_CHOICES %}
+              <option value="{{ value }}" {% if ticket.status == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn-primary">Save Response</button>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Sidebar -->
+  <div>
+    <div class="card p-6">
+      <h3 class="font-bold mb-4">User</h3>
+      <a href="{% url 'platform_admin:user_detail' ticket.user.pk %}" class="block p-3 bg-[var(--color-surface-2)] rounded-lg hover:bg-indigo-500/10">
+        <div class="font-semibold">{{ ticket.user.email }}</div>
+        <div class="text-xs text-[var(--color-text-muted)]">{{ ticket.user.role|title }} · {{ ticket.user.get_account_status_display }}</div>
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
