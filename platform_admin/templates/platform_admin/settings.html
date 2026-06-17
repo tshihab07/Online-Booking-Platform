@@ -1,0 +1,46 @@
+{% extends 'platform_admin/base.html' %}
+{% load booking_tags %}
+
+{% block page_title %}Settings{% endblock %}
+{% block page_subtitle %}Platform-wide settings{% endblock %}
+
+{% block admin_content %}
+<div class="grid xl:grid-cols-2 gap-6">
+  <div class="card p-6">
+    <h2 class="font-bold mb-4">Add Setting</h2>
+    <form method="post">
+      {% csrf_token %}
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm mb-2">Key</label>
+          <input type="text" name="key" class="form-input" placeholder="setting_key_name" required>
+        </div>
+        <div>
+          <label class="block text-sm mb-2">Value</label>
+          <textarea name="value" class="form-textarea" rows="3" placeholder="Setting value"></textarea>
+        </div>
+        <button type="submit" class="btn-primary">Save Setting</button>
+      </div>
+    </form>
+  </div>
+  
+  <div class="card p-6">
+    <h2 class="font-bold mb-4">Current Settings</h2>
+    <div class="space-y-3">
+      {% for setting in settings_list %}
+      <div class="p-3 bg-[var(--color-surface-2)] rounded-lg">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="font-semibold">{{ setting.label }}</div>
+            <div class="text-xs text-[var(--color-text-muted)]">{{ setting.key }}</div>
+          </div>
+          <div class="text-sm">{{ setting.value|truncatechars:50 }}</div>
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-[var(--color-text-muted)]">No settings configured</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
