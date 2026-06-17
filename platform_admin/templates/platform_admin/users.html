@@ -1,0 +1,70 @@
+{% extends 'platform_admin/base.html' %}
+{% load booking_tags %}
+
+{% block page_title %}Users{% endblock %}
+{% block page_subtitle %}Manage platform users{% endblock %}
+
+{% block admin_content %}
+<!-- Search & Filters -->
+<div class="card p-5 mb-6">
+  <form method="get" class="flex flex-wrap gap-4">
+    {{ form.search }}
+    {{ form.status }}
+    {{ form.plan }}
+    <button type="submit" class="btn-primary">Search</button>
+    <a href="{% url 'platform_admin:users' %}" class="btn-secondary">Reset</a>
+  </form>
+</div>
+
+<!-- Users Table -->
+<div class="card overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-[var(--color-surface-2)]">
+      <tr>
+        <th class="text-left px-5 py-3 font-semibold">User</th>
+        <th class="text-left px-5 py-3 font-semibold">Role</th>
+        <th class="text-left px-5 py-3 font-semibold">Status</th>
+        <th class="text-left px-5 py-3 font-semibold">Joined</th>
+        <th class="text-right px-5 py-3 font-semibold">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-[var(--color-border)]">
+      {% for user in page_obj %}
+      <tr class="table-row">
+        <td class="px-5 py-4">
+          <a href="{% url 'platform_admin:user_detail' user.pk %}" class="font-semibold text-indigo-300 hover:text-indigo-200">{{ user.email }}</a>
+          {% if user.first_name or user.last_name %}
+          <div class="text-xs text-[var(--color-text-muted)]">{{ user.first_name }} {{ user.last_name }}</div>
+          {% endif %}
+        </td>
+        <td class="px-5 py-4">{{ user.role|title }}</td>
+        <td class="px-5 py-4">
+          <span class="badge {% if user.account_status == 'approved' %}badge-green{% elif user.account_status == 'pending' %}badge-yellow{% else %}badge-red{% endif %}">
+            {{ user.get_account_status_display }}
+          </span>
+        </td>
+        <td class="px-5 py-4 text-[var(--color-text-muted)]">{{ user.created_at|date:"M d, Y" }}</td>
+        <td class="px-5 py-4 text-right">
+          <a href="{% url 'platform_admin:user_detail' user.pk %}" class="text-indigo-400 hover:text-indigo-300">Manage</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="px-5 py-10 text-center text-[var(--color-text-muted)]">No users found</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center gap-2 mt-6">
+  {% if page_obj.has_previous %}
+  <a href="?page={{ page_obj.previous_page_number }}" class="btn-secondary px-4 py-2">← Previous</a>
+  {% endif %}
+  <span class="px-4 py-2 text-[var(--color-text-muted)]">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}" class="btn-secondary px-4 py-2">Next →</a>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}
