@@ -1,0 +1,94 @@
+{% extends 'platform_admin/base.html' %}
+{% load booking_tags %}
+
+{% block page_title %}Edit Plan{% endblock %}
+{% block page_subtitle %}{{ plan.name }}{% endblock %}
+
+{% block admin_content %}
+<div class="max-w-3xl">
+  <div class="card p-6">
+    <form method="post">
+      {% csrf_token %}
+      
+      <h2 class="font-bold mb-4">Basic Information</h2>
+      <div class="grid md:grid-cols-3 gap-4 mb-6">
+        <div>
+          <label class="block text-sm mb-2">Name</label>
+          {{ form.name }}
+        </div>
+        <div>
+          <label class="block text-sm mb-2">Tier</label>
+          {{ form.tier }}
+        </div>
+        <div>
+          <label class="block text-sm mb-2">Price ($/month)</label>
+          {{ form.price }}
+        </div>
+      </div>
+      
+      <h2 class="font-bold mb-4">Feature Limits</h2>
+      <div class="grid md:grid-cols-3 gap-4 mb-6">
+        <div>
+          <label class="block text-sm mb-2">Max Businesses</label>
+          {{ form.max_businesses }}
+        </div>
+        <div>
+          <label class="block text-sm mb-2">Max Services</label>
+          {{ form.max_services }}
+        </div>
+        <div>
+          <label class="block text-sm mb-2">Max Staff</label>
+          {{ form.max_staff }}
+        </div>
+        <div>
+          <label class="block text-sm mb-2">Max Bookings/Month</label>
+          {{ form.max_bookings_per_month }}
+        </div>
+        <div>
+          <label class="block text-sm mb-2">Max Calendar Views</label>
+          {{ form.max_calendar_views }}
+        </div>
+      </div>
+      
+      <h2 class="font-bold mb-4">Features</h2>
+      <div class="grid md:grid-cols-3 gap-4 mb-6">
+        <label class="flex items-center gap-2 cursor-pointer">
+          {{ form.custom_themes }} <span>Custom Themes</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          {{ form.analytics_enabled }} <span>Analytics</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          {{ form.api_access }} <span>API Access</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          {{ form.priority_support }} <span>Priority Support</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          {{ form.custom_domain }} <span>Custom Domain</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          {{ form.remove_branding }} <span>Remove Branding</span>
+        </label>
+      </div>
+      
+      <div class="flex items-center gap-2 mb-6">
+        <label class="flex items-center gap-2 cursor-pointer">
+          {{ form.is_active }} <span>Plan Active</span>
+        </label>
+      </div>
+      
+      <h2 class="font-bold mb-4">Stripe Integration</h2>
+      <div class="mb-6">
+        <label class="block text-sm mb-2">Stripe Price ID</label>
+        {{ form.stripe_price_id }}
+      </div>
+      
+      <div class="flex gap-3">
+        <button type="submit" class="btn-primary">Save Changes</button>
+        <a href="{% url 'platform_admin:plans' %}" class="btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
