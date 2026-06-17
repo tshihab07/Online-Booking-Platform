@@ -1,0 +1,82 @@
+{% extends 'platform_admin/base.html' %}
+{% load booking_tags %}
+
+{% block page_title %}Support Tickets{% endblock %}
+{% block page_subtitle %}Manage user support requests{% endblock %}
+
+{% block admin_content %}
+<!-- Filters -->
+<div class="card p-5 mb-6">
+  <form method="get" class="flex gap-4">
+    <select name="status" class="form-select">
+      <option value="">All Status</option>
+      <option value="open" {% if status == 'open' %}selected{% endif %}>Open</option>
+      <option value="in_progress" {% if status == 'in_progress' %}selected{% endif %}>In Progress</option>
+      <option value="resolved" {% if status == 'resolved' %}selected{% endif %}>Resolved</option>
+      <option value="closed" {% if status == 'closed' %}selected{% endif %}>Closed</option>
+    </select>
+    <button type="submit" class="btn-primary">Filter</button>
+    <a href="{% url 'platform_admin:support' %}" class="btn-secondary">Reset</a>
+  </form>
+</div>
+
+<!-- Tickets Table -->
+<div class="card overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-[var(--color-surface-2)]">
+      <tr>
+        <th class="text-left px-5 py-3 font-semibold">Ticket</th>
+        <th class="text-left px-5 py-3 font-semibold">User</th>
+        <th class="text-left px-5 py-3 font-semibold">Priority</th>
+        <th class="text-left px-5 py-3 font-semibold">Status</th>
+        <th class="text-left px-5 py-3 font-semibold">Created</th>
+        <th class="text-right px-5 py-3 font-semibold">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-[var(--color-border)]">
+      {% for ticket in page_obj %}
+      <tr class="table-row">
+        <td class="px-5 py-4">
+          <a href="{% url 'platform_admin:support_detail' ticket.pk %}" class="font-semibold text-indigo-300 hover:text-indigo-200">
+            {{ ticket.subject }}
+          </a>
+          <div class="text-xs text-[var(--color-text-muted)] truncate max-w-xs">{{ ticket.message|truncatewords:10 }}</div>
+        </td>
+        <td class="px-5 py-4">
+          <a href="{% url 'platform_admin:user_detail' ticket.user.pk %}" class="text-indigo-300">{{ ticket.user.email }}</a>
+        </td>
+        <td class="px-5 py-4">
+          <span class="badge {% if ticket.priority == 'urgent' %}badge-red{% elif ticket.priority == 'high' %}badge-yellow{% else %}badge-blue{% endif %}">
+            {{ ticket.get_priority_display }}
+          </span>
+        </td>
+        <td class="px-5 py-4">
+          <span class="badge {% if ticket.status == 'open' %}badge-yellow{% elif ticket.status == 'in_progress' %}badge-blue{% elif ticket.status == 'resolved' %}badge-green{% else %}badge-purple{% endif %}">
+            {{ ticket.get_status_display }}
+          </span>
+        </td>
+        <td class="px-5 py-4 text-[var(--color-text-muted)]">{{ ticket.created_at|date:"M d, Y" }}</td>
+        <td class="px-5 py-4 text-right">
+          <a href="{% url 'platform_admin:support_detail' ticket.pk %}" class="text-indigo-400 hover:text-indigo-300">Respond</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="px-5 py-10 text-center text-[var(--color-text-muted)]">No tickets found</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center gap-2 mt-6">
+  {% if page_obj.has_previous %}
+  <a href="?page={{ page_obj.previous_page_number }}{% if status %}&status={{ status }}{% endif %}" class="btn-secondary px-4 py-2">← Previous</a>
+  {% endif %}
+  <span class="px-4 py-2 text-[var(--color-text-muted)]">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}{% if status %}&status={{ status }}{% endif %}" class="btn-secondary px-4 py-2">Next →</a>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}
