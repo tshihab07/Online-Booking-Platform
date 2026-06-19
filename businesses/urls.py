@@ -5,7 +5,7 @@ app_name = 'businesses'
 
 urlpatterns = [
     path('onboarding/', views.onboarding, name='onboarding'),
-    path('dashboard/', views.dashboard, name='dashboard'),
+    path('', views.dashboard, name='dashboard'),
 
     # Calendar
     path('calendar/', views.calendar_view, name='calendar'),
