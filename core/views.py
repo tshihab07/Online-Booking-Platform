@@ -9,4 +9,6 @@ def home(request):
 
 
 def handler404(request, exception):
-    return render(request, 'core/404.html', status=404)
+    return render(request, 'core/404.html', {
+        'request_path': request.path,
+    }, status=404)
