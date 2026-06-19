@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}Bookify — Online Booking Platform{% endblock %}</title>
+  <title>{% block title %}Krypto Booking — Online Booking Platform{% endblock %}</title>
   <meta name="description" content="{% block meta_description %}Professional online booking for salons, restaurants, hospitals, hotels and events.{% endblock %}">
 
   <!-- Fonts -->
@@ -12,6 +12,9 @@
 
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- Favicon -->
+  <link rel="icon" href="/media/app_image/KryptoBooking_Favicon.png" />
 
   <!-- Tailwind CDN (dev) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -35,6 +38,28 @@
 
   <!-- Global CSS -->
   <link rel="stylesheet" href="/static/css/dashboard.css">
+
+  <!-- Theme variables (light default). Child templates can append to `theme_css`. -->
+  <style>
+    :root{
+      --color-primary:#6366f1;
+      --color-secondary:#8b5cf6;
+      --color-accent:#06b6d4;
+      --bg: #ffffff;
+      --text: #0a0a14;
+      --color-text-muted: #6b7280;
+      --card-bg: #ffffff;
+      --card-border: #e6e6ef;
+    }
+    .dark-mode{
+      --bg: #0a0a14;
+      --text: #e8eaf6;
+      --color-text-muted: #9ca3af;
+      --card-bg: rgba(255,255,255,0.03);
+      --card-border: rgba(99,102,241,0.08);
+    }
+    body{background:var(--bg);color:var(--text)}
+  </style>
 
   <!-- Dynamic theme CSS vars -->
   {% block theme_css %}{% endblock %}
