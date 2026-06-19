@@ -82,27 +82,35 @@ class Command(BaseCommand):
                     'username': email.split('@')[0],
                 }
             )
+            user.set_password(demo_password)
+            user.account_status = 'approved'
+            user.is_active = True
+            if not user.username:
+                user.username = email.split('@')[0]
+            user.save()
             if created:
-                user.set_password(demo_password)
-                user.save()
                 self.stdout.write(f'  User created: {email}')
+            else:
+                self.stdout.write(f'  User updated: {email}')
 
             biz_name, biz_type = biz_templates[tier]
             slug = f'demo-{biz_type}'
-            # Use filter+create pattern to avoid passing empty _id to ObjectIdField
             biz = Business.objects.filter(slug=slug).first()
-            biz_created = False
             if not biz:
                 biz = Business.objects.create(
                     name=biz_name, slug=slug, business_type=biz_type,
                     email=email, phone='+1-555-0000',
                     plan=tier, is_active=True,
                 )
-                biz_created = True
-            if biz_created:
-                user.businesses = [str(biz.pk)]
-                user.active_business_id = str(biz.pk)
-                user.save()
+                self.stdout.write(f'  Business created: {biz_name}')
+
+            biz_id = str(biz.pk)
+            biz_list = list(user.businesses or [])
+            if biz_id not in biz_list:
+                biz_list.append(biz_id)
+            user.businesses = biz_list
+            user.active_business_id = biz_id
+            user.save(update_fields=['businesses', 'active_business_id'])
 
             svcs = []
             for svc_name, dur, price in svc_templates.get(biz_type, []):
