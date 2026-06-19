@@ -1,9 +1,9 @@
 from django.db import models
 from django.utils.text import slugify
-from django_mongodb_backend.fields import ObjectIdField
+from django_mongodb_backend.fields import ObjectIdAutoField
 
 class Business(models.Model):
-    _id = ObjectIdField(primary_key=True)
+    _id = ObjectIdAutoField(primary_key=True)
     
     # Basic Info
     name = models.CharField(max_length=200)
@@ -74,7 +74,7 @@ class Business(models.Model):
 
 
 class Service(models.Model):
-    _id = ObjectIdField(primary_key=True)
+    _id = ObjectIdAutoField(primary_key=True)
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='services')
     
     name = models.CharField(max_length=200)
@@ -97,7 +97,7 @@ class Service(models.Model):
 
 
 class Staff(models.Model):
-    _id = ObjectIdField(primary_key=True)
+    _id = ObjectIdAutoField(primary_key=True)
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='staff_members')
     
     name = models.CharField(max_length=200)
