@@ -20,6 +20,16 @@ from .forms import (
 from .models import CustomUser, PlatformSetting, SupportTicket
 
 
+def _user_has_business(user):
+    from businesses.models import Business
+
+    active_id = user.active_business_id
+    if active_id and Business.objects.filter(pk=active_id).exists():
+        return True
+    ids = user.businesses or []
+    return bool(ids) and Business.objects.filter(pk__in=ids).exists()
+
+
 def staff_required(view_func):
     return login_required(user_passes_test(lambda u: u.is_staff and u.is_active)(view_func))
 
@@ -37,15 +47,71 @@ def signup_view(request):
 
 
 def login_view(request):
+    if request.method == 'POST':
+        if request.user.is_authenticated:
+            logout(request)
+
+        form = LoginForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            next_url = request.GET.get('next')
+            if next_url:
+                return redirect(next_url)
+            return redirect('businesses:dashboard')
+        return render(request, 'accounts/login.html', {'form': form})
+
+    if request.GET.get('switch') == '1' and request.user.is_authenticated:
+        logout(request)
+        messages.info(request, 'Signed out. Log in with your existing account below.')
+        return redirect('accounts:login')
+
     if request.user.is_authenticated:
-        return redirect('businesses:dashboard')
-    form = LoginForm(request, data=request.POST or None)
-    if request.method == 'POST' and form.is_valid():
-        user = form.get_user()
-        login(request, user)
-        next_url = request.GET.get('next', 'businesses:dashboard')
-        return redirect(next_url)
+        if _user_has_business(request.user):
+            return redirect('businesses:dashboard')
+        return render(request, 'accounts/login.html', {
+            'form': LoginForm(request),
+            'pending_setup': True,
+            'current_email': request.user.email,
+        })
+
+    initial = {}
+    email = request.GET.get('email', '').strip()
+    if email:
+        initial['username'] = email
+
+    form = LoginForm(request, initial=initial)
     return render(request, 'accounts/login.html', {'form': form})
+
+
+def _auth_path_not_found(request, extra_path, auth_action):
+    """Handle invalid /login/<extra> or /signup/<extra> URLs with a friendly page."""
+    from django.core.validators import validate_email
+    from django.core.exceptions import ValidationError
+
+    suggested_email = ''
+    if auth_action == 'login' and extra_path:
+        candidate = extra_path.strip('/')
+        try:
+            validate_email(candidate)
+            suggested_email = candidate
+        except ValidationError:
+            pass
+
+    return render(request, 'accounts/auth_path_not_found.html', {
+        'auth_action': auth_action,
+        'page_label': 'Log In' if auth_action == 'login' else 'Sign Up',
+        'request_path': request.path,
+        'suggested_email': suggested_email,
+    }, status=404)
+
+
+def login_path_not_found_view(request, extra_path):
+    return _auth_path_not_found(request, extra_path, 'login')
+
+
+def signup_path_not_found_view(request, extra_path):
+    return _auth_path_not_found(request, extra_path, 'signup')
 
 
 @require_POST
