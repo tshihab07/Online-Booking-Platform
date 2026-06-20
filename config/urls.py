@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
@@ -20,10 +21,13 @@ urlpatterns = [
 
     # Auth
     path('', include('accounts.urls')),
+    path('accounts/login/', RedirectView.as_view(url='/login/', permanent=False)),
+    path('accounts/signup/', RedirectView.as_view(url='/signup/', permanent=False)),
     path('accounts/', include('allauth.urls')),
 
     # Dashboard
     path('dashboard/', include('businesses.urls')),
+    path('dashboard/dashboard/', RedirectView.as_view(url='/dashboard/', permanent=False)),
 
     # Public booking portal: /b/<slug>/
     path('b/<slug:slug>/', include('bookings.urls')),
