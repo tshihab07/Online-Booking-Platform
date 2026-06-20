@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Page Not Found — Bookify{% endblock %}
+
+{% block theme_css %}
+<style>
+  body { background: #0a0a14; color: #e8eaf6; }
+  .auth-card {
+    background: rgba(26,26,46,0.9);
+    border: 1px solid rgba(99,102,241,0.2);
+    backdrop-filter: blur(20px);
+  }
+  .path-chip {
+    background: rgba(15,15,26,0.9);
+    border: 1px solid rgba(239,68,68,0.25);
+    color: #fca5a5;
+    word-break: break-all;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center px-4 py-12"
+     style="background: radial-gradient(ellipse at 50% 0%, rgba(239,68,68,0.12) 0%, transparent 60%), #0a0a14;">
+  <div class="w-full max-w-lg text-center">
+    <div class="mb-8">
+      <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-red-500/10 border border-red-500/20 mb-6">
+        <i class="fas fa-route text-3xl text-red-400"></i>
+      </div>
+      <h1 class="text-3xl font-bold text-white mb-3">This page does not exist</h1>
+      <p class="text-gray-400">
+        The address you opened is not a valid Bookify {{ page_label|lower }} page.
+      </p>
+    </div>
+
+    <div class="auth-card rounded-2xl p-8 text-left mb-6">
+      <p class="text-sm text-gray-400 mb-3">Requested path</p>
+      <code class="path-chip block rounded-xl px-4 py-3 text-sm font-mono">{{ request_path }}</code>
+
+      {% if suggested_email %}
+      <div class="mt-5 p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+        <p class="text-sm text-indigo-200">
+          <i class="fas fa-lightbulb mr-2"></i>
+          It looks like you tried to log in with an email in the URL. Bookify uses a single login page instead.
+        </p>
+        <p class="text-sm text-gray-400 mt-2">
+          Go to <strong class="text-white">Log In</strong>, enter <strong class="text-indigo-300">{{ suggested_email }}</strong>, and use your password.
+        </p>
+      </div>
+      {% else %}
+      <p class="text-sm text-gray-400 mt-5">
+        Use the correct {{ page_label|lower }} URL below. Do not append an email or extra segments to the path.
+      </p>
+      {% endif %}
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+      {% if suggested_email %}
+      <a href="{% url 'accounts:login' %}?email={{ suggested_email|urlencode }}"
+         class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity">
+        <i class="fas fa-right-to-bracket"></i> Log In as {{ suggested_email }}
+      </a>
+      {% elif auth_action == 'login' %}
+      <a href="{% url 'accounts:login' %}"
+         class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity">
+        <i class="fas fa-right-to-bracket"></i> Go to Log In
+      </a>
+      {% else %}
+      <a href="{% url 'accounts:signup' %}"
+         class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity">
+        <i class="fas fa-user-plus"></i> Go to Sign Up
+      </a>
+      {% endif %}
+      <a href="{% url 'core:home' %}"
+         class="inline-flex items-center justify-center gap-2 border border-gray-700 text-gray-300 px-6 py-3 rounded-xl font-semibold hover:bg-white/5 transition-colors">
+        <i class="fas fa-home"></i> Back to Home
+      </a>
+    </div>
+
+    {% if auth_action == 'login' and not suggested_email %}
+    <p class="text-sm text-gray-500 mt-6">
+      New here?
+      <a href="{% url 'accounts:signup' %}" class="text-indigo-400 hover:text-indigo-300 font-medium">Create an account</a>
+    </p>
+    {% elif auth_action == 'signup' %}
+    <p class="text-sm text-gray-500 mt-6">
+      Already have an account?
+      <a href="{% url 'accounts:login' %}" class="text-indigo-400 hover:text-indigo-300 font-medium">Log in here</a>
+    </p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
