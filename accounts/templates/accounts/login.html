@@ -54,7 +54,7 @@
         {% csrf_token %}
         <div class="space-y-5">
           <div>
-            <label for="{{ form.username.id_for_label }}">Email address</label>
+            <label for="{{ form.username.id_for_label }}">Email or username</label>
             {{ form.username }}
             {{ form.username.errors }}
           </div>
