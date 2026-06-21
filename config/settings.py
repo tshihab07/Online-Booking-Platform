@@ -131,6 +131,7 @@ LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
 AUTHENTICATION_BACKENDS = [
+    'accounts.backends.EmailOrUsernameModelBackend',
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
@@ -145,8 +146,8 @@ ACCOUNT_SIGNUP_URL = '/signup/'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/'
 ACCOUNT_DEFAULT_AUTO_FIELD = 'django_mongodb_backend.fields.ObjectIdAutoField'
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+ACCOUNT_USERNAME_REQUIRED = True
 _email_verification = config('ACCOUNT_EMAIL_VERIFICATION', default='optional').strip().lower()
 if _email_verification not in ('none', 'optional', 'mandatory'):
     _email_verification = 'optional'
