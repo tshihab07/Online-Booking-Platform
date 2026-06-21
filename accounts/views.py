@@ -272,6 +272,9 @@ def platform_admin_user_detail(request, user_id):
 
     businesses = Business.objects.filter(pk__in=managed_user.businesses or [])
     bookings = Booking.objects.filter(business__in=businesses).select_related('business', 'service', 'staff').order_by('-date', '-start_time')[:25]
+    customers = Booking.objects.filter(business__in=businesses).values(
+        'customer_name', 'customer_email', 'customer_phone'
+    ).distinct()[:25]
     payments = SubscriptionPayment.objects.filter(user=managed_user).select_related('business')[:25]
 
     return render(request, 'accounts/platform_admin/user_detail.html', {
@@ -280,6 +283,7 @@ def platform_admin_user_detail(request, user_id):
         'password_form': password_form,
         'businesses': businesses,
         'bookings': bookings,
+        'customers': customers,
         'payments': payments,
         'page': 'platform_users',
     })
