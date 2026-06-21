@@ -4,8 +4,46 @@ from .models import CustomUser, PlatformSetting, SupportTicket
 
 
 class SignupForm(UserCreationForm):
+    first_name = forms.CharField(
+        label='First Name',
+        widget=forms.TextInput(attrs={'placeholder': 'First name', 'class': 'form-input'}),
+        required=True,
+    )
+    last_name = forms.CharField(
+        label='Last Name',
+        widget=forms.TextInput(attrs={'placeholder': 'Last name', 'class': 'form-input'}),
+        required=True,
+    )
     email = forms.EmailField(
-        widget=forms.EmailInput(attrs={'placeholder': 'your@email.com', 'class': 'form-input'})
+        label='Email',
+        widget=forms.EmailInput(attrs={'placeholder': 'your@email.com', 'class': 'form-input'}),
+        required=True,
+    )
+    phone = forms.CharField(
+        label='Phone Number',
+        widget=forms.TextInput(attrs={'placeholder': '+1 234 567 8900', 'class': 'form-input'}),
+        required=True,
+    )
+    organization_name = forms.CharField(
+        label='Organization Name',
+        widget=forms.TextInput(attrs={'placeholder': 'Your company or organization', 'class': 'form-input'}),
+        required=True,
+    )
+    business_type = forms.ChoiceField(
+        label='Business Type',
+        choices=CustomUser.BUSINESS_TYPE_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        required=True,
+    )
+    username = forms.CharField(
+        label='Username',
+        widget=forms.TextInput(attrs={'placeholder': 'Choose a username', 'class': 'form-input'}),
+        required=True,
+    )
+    agree_terms = forms.BooleanField(
+        label='I agree to the Terms and Conditions',
+        required=True,
+        widget=forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
     )
     password1 = forms.CharField(
         label='Password',
@@ -18,11 +56,28 @@ class SignupForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ('email', 'password1', 'password2')
+        fields = (
+            'first_name',
+            'last_name',
+            'email',
+            'phone',
+            'organization_name',
+            'business_type',
+            'username',
+            'password1',
+            'password2',
+            'agree_terms',
+        )
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.username = user.email
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name = self.cleaned_data['last_name']
+        user.email = self.cleaned_data['email']
+        user.username = self.cleaned_data['username']
+        user.phone = self.cleaned_data['phone']
+        user.organization_name = self.cleaned_data['organization_name']
+        user.business_type = self.cleaned_data['business_type']
         user.account_status = 'pending'
         if commit:
             user.save()
@@ -30,9 +85,9 @@ class SignupForm(UserCreationForm):
 
 
 class LoginForm(AuthenticationForm):
-    username = forms.EmailField(
-        label='Email',
-        widget=forms.EmailInput(attrs={'placeholder': 'your@email.com', 'class': 'form-input', 'autofocus': True}),
+    username = forms.CharField(
+        label='Email or username',
+        widget=forms.TextInput(attrs={'placeholder': 'Email or username', 'class': 'form-input', 'autofocus': True}),
     )
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={'placeholder': '••••••••', 'class': 'form-input'}),
