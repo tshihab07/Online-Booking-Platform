@@ -47,6 +47,15 @@ class CustomUser(AbstractUser):
     
     # profile fields
     phone = models.CharField(max_length=20, blank=True)
+    organization_name = models.CharField(max_length=255, blank=True, default='')
+    BUSINESS_TYPE_CHOICES = [
+        ('salons', 'Salons and Beauty'),
+        ('hospitals', 'Hospitals'),
+        ('restaurants', 'Restaurant'),
+        ('event-management', 'Event Management'),
+        ('hotels', 'Hotels'),
+    ]
+    business_type = models.CharField(max_length=50, choices=BUSINESS_TYPE_CHOICES, blank=True, default='salons')
     avatar = models.ImageField(upload_to='avatars/', blank=True)
     
     # multi-tenancy
