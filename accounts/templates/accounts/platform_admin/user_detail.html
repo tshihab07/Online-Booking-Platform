@@ -41,6 +41,17 @@
       {% for business in businesses %}<div class="py-2 border-t border-[var(--color-border)]"><div class="font-semibold">{{ business.name }}</div><div class="text-xs text-[var(--color-text-muted)]">{{ business.plan|title }} · {{ business.subscription_status|title }}</div></div>{% empty %}<p class="text-sm text-[var(--color-text-muted)]">No businesses.</p>{% endfor %}
     </div>
     <div class="card p-6">
+      <h2 class="text-lg font-bold mb-4">Customers</h2>
+      {% for customer in customers %}
+      <div class="py-3 border-t border-[var(--color-border)]">
+        <div class="font-semibold">{{ customer.customer_name }}</div>
+        <div class="text-xs text-[var(--color-text-muted)]">{{ customer.customer_email }} · {{ customer.customer_phone }}</div>
+      </div>
+      {% empty %}
+      <p class="text-sm text-[var(--color-text-muted)]">No customers found.</p>
+      {% endfor %}
+    </div>
+    <div class="card p-6">
       <h2 class="text-lg font-bold mb-4">Payments</h2>
       {% for payment in payments %}<a class="block py-2 border-t border-[var(--color-border)]" href="{% url 'accounts:platform_payment_detail' payment.pk %}">{{ payment.amount|currency }} <span class="text-xs text-[var(--color-text-muted)]">{{ payment.status|title }}</span></a>{% empty %}<p class="text-sm text-[var(--color-text-muted)]">No payments.</p>{% endfor %}
     </div>
