@@ -30,11 +30,41 @@
     <div class="auth-card rounded-2xl p-8">
       <form method="post" novalidate>
         {% csrf_token %}
-        <div class="space-y-5">
+        <div class="grid sm:grid-cols-2 gap-5">
           <div>
+            <label for="{{ form.first_name.id_for_label }}">First Name</label>
+            {{ form.first_name }}
+            {{ form.first_name.errors }}
+          </div>
+          <div>
+            <label for="{{ form.last_name.id_for_label }}">Last Name</label>
+            {{ form.last_name }}
+            {{ form.last_name.errors }}
+          </div>
+          <div class="sm:col-span-2">
             <label for="{{ form.email.id_for_label }}">Email address</label>
             {{ form.email }}
             {{ form.email.errors }}
+          </div>
+          <div class="sm:col-span-2">
+            <label for="{{ form.phone.id_for_label }}">Phone Number</label>
+            {{ form.phone }}
+            {{ form.phone.errors }}
+          </div>
+          <div class="sm:col-span-2">
+            <label for="{{ form.organization_name.id_for_label }}">Organization Name</label>
+            {{ form.organization_name }}
+            {{ form.organization_name.errors }}
+          </div>
+          <div>
+            <label for="{{ form.business_type.id_for_label }}">Business type</label>
+            {{ form.business_type }}
+            {{ form.business_type.errors }}
+          </div>
+          <div>
+            <label for="{{ form.username.id_for_label }}">Username</label>
+            {{ form.username }}
+            {{ form.username.errors }}
           </div>
           <div>
             <label for="{{ form.password1.id_for_label }}">Password</label>
@@ -42,9 +72,14 @@
             {{ form.password1.errors }}
           </div>
           <div>
-            <label for="{{ form.password2.id_for_label }}">Confirm password</label>
+            <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
             {{ form.password2 }}
             {{ form.password2.errors }}
+          </div>
+          <div class="sm:col-span-2 flex items-center gap-3">
+            {{ form.agree_terms }}
+            <label for="{{ form.agree_terms.id_for_label }}" class="text-sm text-gray-300">I agree to the <a href="/terms/" class="text-indigo-300 hover:text-indigo-200">Terms and Conditions</a>.</label>
+            {{ form.agree_terms.errors }}
           </div>
         </div>
         {% if form.non_field_errors %}
