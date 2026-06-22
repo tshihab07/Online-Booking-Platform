@@ -26,9 +26,9 @@ DATABASES = {
 
 # Application definition
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
+    'config.app_configs.MongoAdminConfig',
+    'config.app_configs.MongoAuthConfig',
+    'config.app_configs.MongoContentTypesConfig',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
@@ -40,8 +40,8 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'corsheaders',
     'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
+    'config.app_configs.MongoAllAuthConfig',
+    'config.app_configs.MongoSocialAccountConfig',
     
     # Local apps
     'accounts',
