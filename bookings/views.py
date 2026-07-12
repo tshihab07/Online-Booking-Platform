@@ -102,6 +102,7 @@ def create_booking(request, slug):
     staff_id = request.POST.get('staff_id')
     booking_date_str = request.POST.get('date')
     start_time_str = request.POST.get('start_time')
+    payment_method = request.POST.get('payment_method', 'online')  # 'online' or 'offline'
 
     service = get_object_or_404(Service, pk=service_id, business=business, is_active=True)
     staff = None
@@ -123,8 +124,10 @@ def create_booking(request, slug):
     if not all([customer_data['customer_name'], customer_data['customer_email'], customer_data['customer_phone']]):
         return JsonResponse({'error': 'Name, email and phone are required.'}, status=400)
 
+    payment_method = request.POST.get('payment_method', 'online')
+
     booking, error = create_booking_atomic(
-        business, service, staff, customer_data, booking_date, start_time_str
+        business, service, staff, customer_data, booking_date, start_time_str, payment_method
     )
 
     if error:
@@ -160,7 +163,7 @@ def booking_confirmation(request, slug, booking_id):
         import io
         import base64
         qr = qrcode.QRCode(version=1, box_size=6, border=2)
-        qr.add_data(f"BOOKIFY:{booking.pk}:{business.slug}")
+        qr.add_data(f"BOOKIFY:{booking.client_id}:{business.slug}")
         qr.make(fit=True)
         img = qr.make_image(fill_color="black", back_color="white")
         buf = io.BytesIO()
