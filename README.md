@@ -200,9 +200,6 @@ python manage.py create_superuser
 python manage.py init_platform --demo
 ```
 
-See [TESTING.md](TESTING.md) for a full checklist without using `/signup/`.
-
-Optional static collection:
 
 ```bash
 python manage.py collectstatic --noinput
