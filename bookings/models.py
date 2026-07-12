@@ -1,5 +1,12 @@
 from django.db import models
 from django_mongodb_backend.fields import ObjectIdAutoField
+import random
+
+
+def generate_client_id():
+    """Generate a unique 6-digit client ID."""
+    return f"{random.randint(100000, 999999)}"
+
 
 class Booking(models.Model):
     _id = ObjectIdAutoField(primary_key=True)
@@ -11,6 +18,7 @@ class Booking(models.Model):
     customer_phone = models.CharField(max_length=20)
     customer_notes = models.TextField(blank=True)
     customer_id = models.CharField(max_length=50, blank=True)  # For returning customers
+    client_id = models.CharField(max_length=6, blank=True, editable=False)  # 6-digit unique code for check-in
     
     # Booking Details
     service = models.ForeignKey('businesses.Service', on_delete=models.CASCADE)
@@ -31,9 +39,19 @@ class Booking(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='confirmed')
     
     # Payment
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    payment_status = models.CharField(max_length=20, default='unpaid')
+    PAYMENT_STATUS_CHOICES = [
+        ('unpaid', 'Unpaid'),
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('offline_pending', 'Offline - Pending'),
+    ]
+    payment_method = models.CharField(max_length=20, choices=[
+        ('online', 'Online'),
+        ('offline', 'Offline'),
+    ], blank=True, default='')
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='unpaid')
     payment_id = models.CharField(max_length=100, blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
     
     # Metadata
     source = models.CharField(max_length=20, default='website')  # website, widget, manual
@@ -48,6 +66,13 @@ class Booking(models.Model):
         ]
     
     def save(self, *args, **kwargs):
+        # Generate client_id if not set
+        if not self.client_id:
+            self.client_id = generate_client_id()
+            # Ensure uniqueness
+            while Booking.objects.filter(client_id=self.client_id).exists():
+                self.client_id = generate_client_id()
+        
         # Calculate end_time based on service duration
         if self.start_time and self.service:
             from datetime import datetime, timedelta
