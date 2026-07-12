@@ -132,7 +132,7 @@ def get_availability_heatmap(business, service, year, month):
     return result
 
 
-def create_booking_atomic(business, service, staff, customer_data, booking_date, start_time_str):
+def create_booking_atomic(business, service, staff, customer_data, booking_date, start_time_str, payment_method='online'):
     """
     Atomically create a booking with double-booking protection.
     Returns (booking, error_message).
@@ -148,6 +148,14 @@ def create_booking_atomic(business, service, staff, customer_data, booking_date,
     start_dt = datetime.combine(booking_date, start_time)
     end_dt = start_dt + timedelta(minutes=service.duration)
     end_time = end_dt.time()
+
+    # Determine payment status based on payment method
+    if payment_method == 'offline':
+        payment_status = 'offline_pending'
+        status = 'confirmed'  # Booking confirmed but payment pending
+    else:
+        payment_status = 'unpaid'
+        status = 'pending'
 
     try:
         with transaction.atomic():
@@ -172,7 +180,9 @@ def create_booking_atomic(business, service, staff, customer_data, booking_date,
                 start_time=start_time,
                 end_time=end_time,
                 amount=service.price,
-                status='pending',
+                status=status,
+                payment_method=payment_method,
+                payment_status=payment_status,
                 **customer_data,
             )
             record_booking_created(business)
