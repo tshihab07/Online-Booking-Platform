@@ -431,7 +431,7 @@ def clients_view(request):
         return redirect('businesses:onboarding')
 
     from bookings.models import Booking
-    from django.db.models import Count, Sum, Max
+    from django.db.models import Count, Sum, Max, Min
 
     # Aggregate unique customers
     raw = (
@@ -441,6 +441,7 @@ def clients_view(request):
         .annotate(
             visit_count=Count('pk'),
             last_visit=Max('date'),
+            first_client_id=Min('client_id'),  # Get the first client_id for this customer
         )
         .order_by('-last_visit')
     )
@@ -458,7 +459,7 @@ def clients_view(request):
 
 
 @login_required
-def client_detail(request, email):
+def client_detail(request, client_id):
     business = _get_active_business(request)
     if not business:
         return redirect('businesses:onboarding')
@@ -466,18 +467,66 @@ def client_detail(request, email):
     from bookings.models import Booking
     bookings = Booking.objects.filter(
         business=business,
-        customer_email=email,
+        client_id=client_id,
     ).order_by('-date').select_related('service', 'staff')
 
-    ltv_data = get_client_ltv(business, email)
-    customer_name = bookings.first().customer_name if bookings.exists() else email
+    if not bookings.exists():
+        return redirect('businesses:clients')
+
+    # Get client info from first booking
+    first_booking = bookings.first()
+    customer_email = first_booking.customer_email
+    customer_name = first_booking.customer_name
+    customer_phone = first_booking.customer_phone
+
+    ltv_data = get_client_ltv(business, customer_email)
+
+    # Payment status summary
+    paid_count = bookings.filter(payment_status='paid').count()
+    pending_count = bookings.filter(payment_status__in=['unpaid', 'offline_pending', 'pending']).count()
+    total_amount = sum(b.amount for b in bookings)
+    paid_amount = sum(b.amount for b in bookings.filter(payment_status='paid'))
+    pending_amount = sum(b.amount for b in bookings.filter(payment_status__in=['unpaid', 'offline_pending', 'pending']))
+
+    # Handle payment status update
+    if request.method == 'POST' and request.POST.get('action') == 'update_payment':
+        booking_id = request.POST.get('booking_id')
+        new_payment_status = request.POST.get('payment_status')
+        valid_statuses = ['unpaid', 'pending', 'paid', 'offline_pending']
+        if booking_id and new_payment_status in valid_statuses:
+            booking = get_object_or_404(Booking, pk=booking_id, business=business)
+            booking.payment_status = new_payment_status
+            if new_payment_status == 'paid':
+                booking.status = 'confirmed'
+            booking.save(update_fields=['payment_status', 'status'])
+            messages.success(request, f'Payment status updated to {new_payment_status}')
+            return redirect('businesses:client_detail', client_id=client_id)
+
+    # Handle booking status update
+    if request.method == 'POST' and request.POST.get('action') == 'update_booking_status':
+        booking_id = request.POST.get('booking_id')
+        new_status = request.POST.get('status')
+        valid_statuses = [s[0] for s in Booking.STATUS_CHOICES]
+        if booking_id and new_status in valid_statuses:
+            booking = get_object_or_404(Booking, pk=booking_id, business=business)
+            booking.status = new_status
+            booking.save(update_fields=['status'])
+            messages.success(request, f'Booking status updated to {new_status}')
+            return redirect('businesses:client_detail', client_id=client_id)
 
     return render(request, 'businesses/client_detail.html', {
         'business': business,
-        'customer_email': email,
+        'client_id': client_id,
+        'customer_email': customer_email,
         'customer_name': customer_name,
+        'customer_phone': customer_phone,
         'bookings': bookings,
         'ltv_data': ltv_data,
+        'paid_count': paid_count,
+        'pending_count': pending_count,
+        'total_amount': total_amount,
+        'paid_amount': paid_amount,
+        'pending_amount': pending_amount,
         'page': 'clients',
     })
 
