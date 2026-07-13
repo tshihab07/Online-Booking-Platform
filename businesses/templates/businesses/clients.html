@@ -6,8 +6,8 @@
 {% block dashboard_content %}
 <div class="card overflow-hidden">
   <div class="p-5 border-b flex items-center justify-between" style="border-color: var(--color-border);">
-    <h2 class="font-bold">All Clients ({{ clients|length }})</h2>
-    <input type="text" placeholder="Search clients…" id="client-search"
+    <h2 class="font-bold" style="color: rgba(255, 255, 255, 1);">All Clients ({{ clients|length }})</h2>
+    <input type="text" placeholder="Search clients (name, email, client ID)…" id="client-search"
            class="form-input w-64 text-sm py-2" oninput="filterClients(this.value)">
   </div>
 
@@ -16,6 +16,7 @@
     <table class="data-table" id="clients-table">
       <thead>
         <tr>
+          <th>Client ID</th>
           <th>Customer</th>
           <th>Last Visit</th>
           <th>Visits</th>
@@ -26,7 +27,12 @@
       </thead>
       <tbody>
         {% for client in clients %}
-        <tr class="table-row" data-name="{{ client.customer_name|lower }}" data-email="{{ client.customer_email|lower }}">
+        <tr class="table-row" data-name="{{ client.customer_name|lower }}" data-email="{{ client.customer_email|lower }}" data-client-id="{{ client.first_client_id|lower }}">
+          <td>
+            {% if client.first_client_id %}
+            <span class="badge badge-blue">{{ client.first_client_id }}</span>
+            {% else %}<span style="color: var(--color-text-muted);">—</span>{% endif %}
+          </td>
           <td>
             <div class="flex items-center gap-3">
               <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white"
@@ -54,7 +60,7 @@
             <span class="text-sm" style="color: var(--color-text-muted);">{{ client.last_service|default:"—" }}</span>
           </td>
           <td>
-            <a href="{% url 'businesses:client_detail' client.customer_email %}"
+            <a href="{% url 'businesses:client_detail' client.first_client_id %}"
                class="text-indigo-400 hover:text-indigo-300 text-sm font-medium">
               View →
             </a>
@@ -79,7 +85,8 @@ function filterClients(q) {
   document.querySelectorAll('#clients-table tbody tr').forEach(row => {
     const name = row.dataset.name || '';
     const email = row.dataset.email || '';
-    row.style.display = (name.includes(q) || email.includes(q)) ? '' : 'none';
+    const clientId = row.dataset.clientId || '';
+    row.style.display = (name.includes(q) || email.includes(q) || clientId.includes(q)) ? '' : 'none';
   });
 }
 </script>
