@@ -4,6 +4,82 @@
 
 {% block extra_head %}
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+<style>
+  /* Calendar header styling */
+  .fc-header-toolbar {
+    padding: 12px 16px !important;
+  }
+  .fc-toolbar-chunk {
+    gap: 12px !important;
+  }
+  .fc-toolbar-chunk .fc-button-group {
+    gap: 8px !important;
+  }
+  .fc-button {
+    margin: 0 !important;
+    padding: 6px 12px !important;
+    border-radius: 8px !important;
+    border: 1px solid var(--color-border) !important;
+    background: var(--color-surface) !important;
+    color: var(--color-text) !important;
+    font-weight: 500 !important;
+    font-size: 13px !important;
+    transition: all 0.2s !important;
+  }
+  .fc-button:hover:not(:disabled) {
+    background: var(--color-surface-2) !important;
+    border-color: var(--color-primary) !important;
+    color: var(--color-primary) !important;
+  }
+  .fc-button:focus {
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3) !important;
+  }
+  .fc-button-active {
+    background: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
+    color: white !important;
+  }
+  .fc-toolbar-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: var(--color-text) !important;
+  }
+  /* Header background */
+  .fc-header-toolbar {
+    background: #16213e !important;
+    border-radius: 12px 12px 0 0 !important;
+    border-bottom: 1px solid var(--color-border) !important;
+  }
+  /* Calendar container */
+  .fc {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    background: var(--color-surface) !important;
+  }
+  .fc-theme-standard td, .fc-theme-standard th {
+    border-color: var(--color-border) !important;
+  }
+  .fc-col-header-cell {
+    background: #16213e !important;
+    color: var(--color-text) !important;
+  }
+  .fc-daygrid-day-number {
+    color: var(--color-text-muted) !important;
+  }
+  .fc-today {
+    background: rgba(99, 102, 241, 0.08) !important;
+  }
+  .fc-highlight {
+    background: rgba(99, 102, 241, 0.15) !important;
+  }
+  /* List view hover fix */
+  .fc-list-event:hover .fc-list-event-title {
+    color: #000 !important;
+  }
+  .fc-list-event:hover .fc-list-event-time {
+    color: #000 !important;
+  }
+</style>
 {% endblock %}
 
 {% block dashboard_content %}
