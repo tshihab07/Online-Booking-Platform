@@ -20,18 +20,43 @@
         {{ customer_name|first|upper }}
       </div>
       <h2 class="text-xl font-bold mb-1">{{ customer_name }}</h2>
-      <p class="text-sm mb-4" style="color: var(--color-text-muted);">{{ customer_email }}</p>
-      {% if bookings.first.customer_phone %}
-      <p class="text-sm" style="color: var(--color-text-muted);">
-        <i class="fas fa-phone mr-1"></i>{{ bookings.first.customer_phone }}
+      <p class="text-sm mb-2" style="color: var(--color-text-muted);">{{ customer_email }}</p>
+      {% if customer_phone %}
+      <p class="text-sm mb-2" style="color: var(--color-text-muted);">
+        <i class="fas fa-phone mr-1"></i>{{ customer_phone }}
       </p>
+      {% endif %}
+      {% if client_id %}
+      <div class="mt-4 p-3 rounded-xl" style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3);">
+        <div class="text-xs text-indigo-400 mb-1">Client ID</div>
+        <div class="font-black text-2xl text-indigo-400">{{ client_id }}</div>
+      </div>
       {% endif %}
     </div>
 
-    <!-- LTV Stats -->
+    <!-- Payment Summary -->
     <div class="card p-5">
-      <h3 class="font-semibold mb-4">Customer Stats</h3>
+      <h3 class="font-semibold mb-4 flex items-center gap-2">
+        <i class="fas fa-credit-card text-indigo-400"></i> Payment Summary
+      </h3>
       <div class="space-y-3">
+        <div class="flex justify-between text-sm">
+          <span style="color: var(--color-text-muted);">Total Bookings</span>
+          <span class="font-bold">{{ bookings|length }}</span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span style="color: var(--color-text-muted);">Total Amount</span>
+          <span class="font-black text-lg" style="color: var(--color-primary);">{{ total_amount|currency }}</span>
+        </div>
+        <div class="flex justify-between text-sm text-green-400">
+          <span style="color: var(--color-text-muted);">Paid</span>
+          <span class="font-bold">{{ paid_amount|currency }} ({{ paid_count }} bookings)</span>
+        </div>
+        <div class="flex justify-between text-sm text-yellow-400">
+          <span style="color: var(--color-text-muted);">Pending</span>
+          <span class="font-bold">{{ pending_amount|currency }} ({{ pending_count }} bookings)</span>
+        </div>
+        <hr style="border-color: var(--color-border);">
         <div class="flex justify-between text-sm">
           <span style="color: var(--color-text-muted);">Lifetime Value</span>
           <span class="font-black text-lg" style="color: var(--color-primary);">{{ ltv_data.ltv|currency }}</span>
@@ -44,10 +69,6 @@
           <span style="color: var(--color-text-muted);">Last Visit</span>
           <span>{{ ltv_data.last_visit|date:"M j, Y"|default:"—" }}</span>
         </div>
-        <div class="flex justify-between text-sm">
-          <span style="color: var(--color-text-muted);">Last Service</span>
-          <span>{{ ltv_data.last_service|default:"—" }}</span>
-        </div>
       </div>
     </div>
   </div>
@@ -56,36 +77,110 @@
   <div class="xl:col-span-2">
     <div class="card overflow-hidden">
       <div class="p-5 border-b" style="border-color: var(--color-border);">
-        <h3 class="font-bold">Booking History ({{ bookings|length }})</h3>
+        <div class="flex items-center justify-between">
+          <h3 class="font-bold">Booking History ({{ bookings|length }})</h3>
+          <span class="text-xs px-2 py-1 rounded" style="background: rgba(99,102,241,0.1); color: var(--color-primary);">
+            Client ID: {{ client_id }}
+          </span>
+        </div>
       </div>
       {% if bookings %}
       <div class="divide-y" style="border-color: var(--color-border);">
         {% for booking in bookings %}
-        <div class="p-5 flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <div class="text-center min-w-[50px]">
-              <div class="text-lg font-bold">{{ booking.date|date:"j" }}</div>
-              <div class="text-xs" style="color: var(--color-text-muted);">{{ booking.date|date:"M Y" }}</div>
+        <div class="p-5">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+            <div class="flex items-center gap-4">
+              <div class="text-center min-w-[60px] p-2 rounded" style="background: var(--color-surface-2);">
+                <div class="text-lg font-bold">{{ booking.date|date:"j" }}</div>
+                <div class="text-xs" style="color: var(--color-text-muted);">{{ booking.date|date:"M Y" }}</div>
+              </div>
+              <div>
+                <div class="font-semibold">{{ booking.service.name }}</div>
+                <div class="text-sm" style="color: var(--color-text-muted);">
+                  {{ booking.start_time|time:"g:i A" }}
+                  {% if booking.staff %} · {{ booking.staff.name }}{% endif %}
+                </div>
+              </div>
             </div>
-            <div class="w-px h-10" style="background: var(--color-border);"></div>
-            <div>
-              <div class="font-semibold">{{ booking.service.name }}</div>
-              <div class="text-sm" style="color: var(--color-text-muted);">
-                {{ booking.start_time|time:"g:i A" }}
-                {% if booking.staff %} · {{ booking.staff.name }}{% endif %}
+            <div class="flex items-center gap-3 flex-wrap">
+              <span class="font-bold" style="color: var(--color-primary);">{{ booking.amount|currency }}</span>
+              <!-- Payment Status Badge -->
+              <div class="flex items-center gap-2">
+                <span class="badge
+                  {% if booking.payment_status == 'paid' %}badge-green
+                  {% elif booking.payment_status == 'offline_pending' %}badge-yellow
+                  {% else %}badge-red{% endif %}"
+                      style="min-width: 120px; text-align: center;">
+                  {% if booking.payment_status == 'paid' %}
+                    <i class="fas fa-check-circle mr-1"></i>Paid
+                  {% elif booking.payment_status == 'offline_pending' %}
+                    <i class="fas fa-clock mr-1"></i>Offline Pending
+                  {% else %}
+                    <i class="fas fa-exclamation-circle mr-1"></i>Pending
+                  {% endif %}
+                </span>
+              </div>
+              <!-- Booking Status Badge -->
+              <div class="flex items-center gap-2">
+                <span class="badge
+                  {% if booking.status == 'confirmed' %}badge-green
+                  {% elif booking.status == 'completed' %}badge-purple
+                  {% elif booking.status == 'cancelled' %}badge-red
+                  {% elif booking.status == 'no_show' %}badge-red
+                  {% else %}badge-yellow{% endif %}"
+                      style="min-width: 120px; text-align: center;">
+                  {{ booking.get_status_display }}
+                </span>
               </div>
             </div>
           </div>
-          <div class="flex items-center gap-3">
-            <span class="font-bold" style="color: var(--color-primary);">{{ booking.amount|currency }}</span>
-            <span class="badge
-              {% if booking.status == 'confirmed' %}badge-green
-              {% elif booking.status == 'completed' %}badge-purple
-              {% elif booking.status == 'cancelled' %}badge-red
-              {% elif booking.status == 'no_show' %}badge-red
-              {% else %}badge-yellow{% endif %}">
-              {{ booking.get_status_display }}
-            </span>
+
+          <!-- Payment Status Update Row -->
+          <div class="p-4 rounded-lg mb-3" style="background: var(--color-surface-2); border: 1px solid var(--color-border);">
+            <form method="post" class="flex items-center gap-3 flex-wrap">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="update_payment">
+              <input type="hidden" name="booking_id" value="{{ booking.pk }}">
+              <label class="text-sm font-medium" style="color: var(--color-text-muted); min-width: 100px;">Payment Status:</label>
+              <select name="payment_status" 
+                      class="form-select w-auto"
+                      style="min-width: 180px;"
+                      data-original="{{ booking.payment_status }}"
+                      onchange="handleDropdownChange(this, 'save-payment-{{ booking.pk }}')">
+                <option value="unpaid" {% if booking.payment_status == 'unpaid' %}selected{% endif %}>Unpaid</option>
+                <option value="pending" {% if booking.payment_status == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="paid" {% if booking.payment_status == 'paid' %}selected{% endif %}>Paid</option>
+                <option value="offline_pending" {% if booking.payment_status == 'offline_pending' %}selected{% endif %}>Offline - Pending</option>
+              </select>
+              <button type="submit" id="save-payment-{{ booking.pk }}" class="btn-primary text-sm px-4 opacity-50 cursor-not-allowed" disabled>
+                <i class="fas fa-save mr-1"></i> Save
+              </button>
+              <button type="button" class="btn-secondary text-sm px-4" onclick="resetDropdown('payment-form-{{ booking.pk }}')">Cancel</button>
+            </form>
+          </div>
+
+          <!-- Booking Status Update Row -->
+          <div class="p-4 rounded-lg" style="background: var(--color-surface-2); border: 1px solid var(--color-border);">
+            <form method="post" class="flex items-center gap-3 flex-wrap" id="status-form-{{ booking.pk }}">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="update_booking_status">
+              <input type="hidden" name="booking_id" value="{{ booking.pk }}">
+              <label class="text-sm font-medium" style="color: var(--color-text-muted); min-width: 100px;">Booking Status:</label>
+              <select name="status" 
+                      class="form-select w-auto"
+                      style="min-width: 180px;"
+                      data-original="{{ booking.status }}"
+                      onchange="handleDropdownChange(this, 'save-status-{{ booking.pk }}')">
+                {% for status_value, status_label in booking.STATUS_CHOICES %}
+                <option value="{{ status_value }}" {% if booking.status == status_value %}selected{% endif %}>{{ status_label }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit" id="save-status-{{ booking.pk }}" class="btn-primary text-sm px-4 opacity-50 cursor-not-allowed" disabled>
+                <i class="fas fa-save mr-1"></i> Save
+              </button>
+              <button type="button" class="btn-secondary text-sm px-4" onclick="resetDropdown('status-form-{{ booking.pk }}')">Cancel</button>
+            </form>
+          </div>
           </div>
         </div>
         {% endfor %}
@@ -96,4 +191,42 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function handleDropdownChange(selectElement, saveButtonId) {
+  const originalValue = selectElement.dataset.original;
+  const currentValue = selectElement.value;
+  const saveButton = document.getElementById(saveButtonId);
+  
+  if (saveButton) {
+    const hasChanged = (originalValue !== currentValue);
+    saveButton.disabled = !hasChanged;
+    if (hasChanged) {
+      saveButton.classList.remove('opacity-50', 'cursor-not-allowed');
+      saveButton.classList.add('opacity-100');
+    } else {
+      saveButton.classList.add('opacity-50', 'cursor-not-allowed');
+      saveButton.classList.remove('opacity-100');
+    }
+  }
+}
+
+function resetDropdown(formId) {
+  const form = document.getElementById(formId);
+  if (form) {
+    const select = form.querySelector('select');
+    const saveButton = form.querySelector('button[type="submit"]');
+    if (select) {
+      select.value = select.dataset.original;
+    }
+    if (saveButton) {
+      saveButton.disabled = true;
+      saveButton.classList.add('opacity-50', 'cursor-not-allowed');
+      saveButton.classList.remove('opacity-100');
+    }
+  }
+}
+</script>
 {% endblock %}
