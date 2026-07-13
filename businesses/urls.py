@@ -33,7 +33,7 @@ urlpatterns = [
 
     # CRM
     path('clients/', views.clients_view, name='clients'),
-    path('clients/<str:email>/', views.client_detail, name='client_detail'),
+    path('clients/<str:client_id>/', views.client_detail, name='client_detail'),
 
     # Analytics
     path('analytics/', views.analytics_view, name='analytics'),
