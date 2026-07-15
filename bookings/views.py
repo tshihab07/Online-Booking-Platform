@@ -17,7 +17,7 @@ from themes.theme_utils import render_css_vars
 from notifications.utils import send_booking_confirmation
 
 
-def public_landing(request, slug):
+def public_landing(request, slug, step=1):
     """Public-facing landing page for a business."""
     business = get_object_or_404(Business, slug=slug, is_active=True)
     services = Service.objects.filter(business=business, is_active=True).order_by('category', 'name')
@@ -37,6 +37,7 @@ def public_landing(request, slug):
         'css_vars': css_vars,
         'avg_rating': avg_rating,
         'review_count': review_count,
+        'initial_step': step,
     })
 
 
