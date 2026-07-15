@@ -37,8 +37,6 @@ def _get_active_business(request):
     return None
 
 
-# ─── Onboarding ──────────────────────────────────────────────────────────────
-
 @login_required
 def onboarding(request):
     form = OnboardingForm(request.POST or None)
@@ -197,6 +195,8 @@ def calendar_bookings_api(request):
                 'staff': b.staff.name if b.staff else 'Any',
                 'customer_email': b.customer_email,
                 'customer_phone': b.customer_phone,
+                'customer_name': b.customer_name,
+                'client_id': b.client_id,
                 'amount': str(b.amount),
                 'payment_status': b.payment_status,
             },
