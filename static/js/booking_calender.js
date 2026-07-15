@@ -1,11 +1,6 @@
-/**
- * Bookify — Public Booking Engine
- * Handles the 4-step booking flow: Service → Date/Time → Staff → Checkout
- */
-
 const Booking = (() => {
   let state = {
-    step: 1,
+    step: parseInt(document.body.dataset.initialStep) || 1,
     service: null,
     date: null,
     time: null,
@@ -13,9 +8,27 @@ const Booking = (() => {
     slug: document.body.dataset.slug || '',
   };
 
-  // ── Step Navigation ──────────────────────────────────────────────────────
+// URL handling
 
-  function goToStep(n) {
+  function updateURL(step) {
+    const url = step === 1 
+      ? `/b/${state.slug}/` 
+      : `/b/${state.slug}/step/${step}/`;
+    window.history.pushState({ step }, '', url);
+  }
+
+  function handlePopState(event) {
+    if (event.state && event.state.step) {
+      goToStep(event.state.step, false);
+    }
+    else {
+      goToStep(1, false);
+    }
+  }
+
+  // step navigation
+
+  function goToStep(n, updateUrl = true) {
     document.querySelectorAll('.booking-step').forEach(el => {
       el.classList.toggle('hidden', parseInt(el.dataset.step) !== n);
     });
@@ -26,10 +39,13 @@ const Booking = (() => {
       if (s < n)  el.classList.add('done');
     });
     state.step = n;
+    if (updateUrl) {
+      updateURL(n);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // ── Step 1: Service Selection ─────────────────────────────────────────────
+  // service selection
 
   function selectService(card) {
     document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
@@ -44,7 +60,7 @@ const Booking = (() => {
     document.getElementById('btn-to-step2').classList.remove('opacity-50');
   }
 
-  // ── Step 2: Calendar Heatmap ──────────────────────────────────────────────
+  // calendar heatmap
 
   let currentYear, currentMonth;
 
@@ -121,14 +137,25 @@ const Booking = (() => {
       return;
     }
 
-    container.innerHTML = slots.map(s => `
-      <button class="time-pill ${!s.available ? 'unavailable' : ''}"
-              data-start="${s.start}" data-end="${s.end}"
-              ${!s.available ? 'disabled' : ''}
-              onclick="Booking.selectTime(this)">
-        ${s.start}
-      </button>
-    `).join('');
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+
+    container.innerHTML = slots.map(s => {
+      const isToday = date === todayStr;
+      const isPast = isToday && s.start <= now.toTimeString().slice(0,5);
+      const disabled = !s.available || isPast;
+      
+      // Display start time in 12-hour format
+      const displayTime = formatTime12h(s.start);
+      return `
+        <button class="time-pill ${!s.available ? 'unavailable' : ''} ${isPast ? 'unavailable' : ''}"
+                data-start="${s.start}" data-end="${s.end}"
+                ${disabled ? 'disabled' : ''}
+                onclick="Booking.selectTime(this)">
+          ${displayTime}
+        </button>
+      `;
+    }).join('');
   }
 
   function selectTime(pill) {
@@ -139,12 +166,12 @@ const Booking = (() => {
     document.getElementById('btn-to-step3').classList.remove('opacity-50');
   }
 
-  // ── Step 3: Staff Selection ───────────────────────────────────────────────
-
+  // staff selection
   function selectStaff(card) {
     document.querySelectorAll('.staff-card').forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
     state.staff = { id: card.dataset.staffId, name: card.dataset.staffName };
+    
     // Reload time slots with staff filter
     if (state.date) loadTimeSlots(state.date);
     document.getElementById('btn-to-step4').disabled = false;
@@ -158,24 +185,31 @@ const Booking = (() => {
     document.getElementById('btn-to-step4').classList.remove('opacity-50');
   }
 
-  // ── Step 4: Checkout ──────────────────────────────────────────────────────
-
+  // checkout
   function openCheckout() {
     // Populate order summary
     document.getElementById('summary-service').textContent = state.service.name;
     document.getElementById('summary-date').textContent = state.date;
-    document.getElementById('summary-time').textContent = state.time.start;
+    document.getElementById('summary-time').textContent = formatTime12h(state.time.start);
     document.getElementById('summary-staff').textContent = state.staff ? state.staff.name : 'Any available';
     document.getElementById('summary-price').textContent = `$${parseFloat(state.service.price).toFixed(2)}`;
     document.getElementById('summary-duration').textContent = `${state.service.duration} min`;
 
     document.getElementById('checkout-panel').classList.add('open');
     document.getElementById('checkout-overlay').classList.add('open');
+    
+    // Hide floating button when panel opens
+    const floatBtn = document.getElementById('checkout-float-btn');
+    if (floatBtn) floatBtn.classList.add('hidden');
   }
 
   function closeCheckout() {
     document.getElementById('checkout-panel').classList.remove('open');
     document.getElementById('checkout-overlay').classList.remove('open');
+    
+    // Show floating button when panel closes
+    const floatBtn = document.getElementById('checkout-float-btn');
+    if (floatBtn) floatBtn.classList.remove('hidden');
   }
 
   async function submitBooking(e) {
@@ -223,7 +257,7 @@ const Booking = (() => {
     el.textContent = msg;
   }
 
-  // ── Social Proof Ticker ───────────────────────────────────────────────────
+  // social proof ticker
 
   function initTicker(feedJson) {
     const feed = JSON.parse(feedJson || '[]');
@@ -239,16 +273,18 @@ const Booking = (() => {
     ticker.innerHTML = items + items; // duplicate for seamless loop
   }
 
-  // ── Utility ───────────────────────────────────────────────────────────────
+  // utility to get CSRF token from cookies
 
   function getCookie(name) {
     const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
     return v ? v[2] : null;
   }
 
-  // ── Init ──────────────────────────────────────────────────────────────────
-
+  // init
   function init() {
+    // Listen for browser back/forward
+    window.addEventListener('popstate', handlePopState);
+
     const today = new Date();
     currentYear = today.getFullYear();
     currentMonth = today.getMonth() + 1;
@@ -261,6 +297,7 @@ const Booking = (() => {
       if (currentMonth < 1) { currentMonth = 12; currentYear--; }
       if (state.service) loadHeatmap(currentYear, currentMonth);
     });
+
     if (nextBtn) nextBtn.addEventListener('click', () => {
       currentMonth++;
       if (currentMonth > 12) { currentMonth = 1; currentYear++; }
@@ -278,6 +315,63 @@ const Booking = (() => {
     // Ticker
     const tickerData = document.getElementById('ticker-data');
     if (tickerData) initTicker(tickerData.textContent);
+
+    // Floating reopen checkout button
+    initReopenCheckoutButton();
+  }
+
+  // floating reopen checkout button
+
+  function initReopenCheckoutButton() {
+    const btn = document.createElement('button');
+    btn.id = 'reopen-checkout-btn';
+    btn.setAttribute('aria-label', 'Reopen checkout');
+    btn.style.cssText = `
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      padding: 12px;
+      border-radius: 9999px;
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      cursor: pointer;
+      z-index: 999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+      transition: all 0.2s;
+    `;
+    btn.innerHTML = '<i class="fas fa-shopping-cart text-xl" style="color: var(--color-primary);"></i>';
+    btn.onmouseenter = () => btn.style.transform = 'scale(1.05)';
+    btn.onmouseleave = () => btn.style.transform = 'scale(1)';
+    btn.onclick = () => {
+      if (state.service && state.date && state.time) {
+        openCheckout();
+      }
+    };
+    document.body.appendChild(btn);
+
+    // Function to check if we should show the reopen button
+    window.checkReopenButton = () => {
+      const panel = document.getElementById('checkout-panel');
+      const hasBookingData = state.service && state.date && state.time;
+      if (hasBookingData && !panel.classList.contains('open')) {
+        btn.style.display = 'flex';
+      } else {
+        btn.style.display = 'none';
+      }
+    };
+
+    // Check periodically
+    setInterval(window.checkReopenButton, 500);
+
+    // Also check on step changes
+    const originalGoToStep = goToStep;
+    goToStep = function(n) {
+      originalGoToStep(n);
+      setTimeout(window.checkReopenButton, 100);
+    };
   }
 
   return {
@@ -285,6 +379,25 @@ const Booking = (() => {
     selectStaff, skipStaff, openCheckout, closeCheckout,
     loadHeatmap, loadTimeSlots,
   };
+
+  // Utility: Format 24h time to 12h with AM/PM
+  function formatTime12h(time24) {
+    const [h, m] = time24.split(':').map(Number);
+    const period = h >= 12 ? 'PM' : 'AM';
+    const hour12 = h % 12 || 12;
+    return `${hour12}:${m.toString().padStart(2, '0')} ${period}`;
+  }
+
+  // Handle browser back/forward
+  function handlePopState(event) {
+    const state = event.state;
+    if (state && state.step) {
+      goToStep(state.step);
+    } else {
+      // Default to step 1 if no state
+      goToStep(1);
+    }
+  }
 })();
 
 document.addEventListener('DOMContentLoaded', Booking.init);
