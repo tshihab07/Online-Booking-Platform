@@ -106,7 +106,13 @@
         </div>
         <div class="w-px h-10 bg-[var(--color-border)]"></div>
         <div class="flex-1">
+          {% if booking.client_id %}
+          <a href="{% url 'businesses:client_detail' booking.client_id %}" class="font-semibold text-white hover:text-indigo-300 transition-colors">
+            {{ booking.customer_name }}
+          </a>
+          {% else %}
           <div class="font-semibold text-white">{{ booking.customer_name }}</div>
+          {% endif %}
           <div class="text-sm text-[var(--color-text-muted)]">{{ booking.service.name }}{% if booking.staff %} · {{ booking.staff.name }}{% endif %}</div>
         </div>
         <span class="badge
