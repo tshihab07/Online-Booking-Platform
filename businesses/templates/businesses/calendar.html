@@ -163,10 +163,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const p = info.event.extendedProps;
       document.getElementById('booking-detail').style.display = 'block';
       document.getElementById('status-select').value = p.status;
+      const clientUrl = p.client_id ? `/dashboard/clients/${p.client_id}/` : '#';
       document.getElementById('detail-content').innerHTML = `
         <div class="flex justify-between py-1 border-b" style="border-color:var(--color-border)">
           <span style="color:var(--color-text-muted)">Customer</span>
-          <span class="font-semibold">${info.event.title.split('—')[0].trim()}</span>
+          <a href="${clientUrl}" class="font-semibold text-indigo-400 hover:underline">${info.event.title.split('—')[0].trim()}</a>
         </div>
         <div class="flex justify-between py-1 border-b" style="border-color:var(--color-border)">
           <span style="color:var(--color-text-muted)">Service</span>
@@ -178,11 +179,11 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="flex justify-between py-1 border-b" style="border-color:var(--color-border)">
           <span style="color:var(--color-text-muted)">Email</span>
-          <span class="text-xs">${p.customer_email}</span>
+          <a href="mailto:${p.customer_email}" class="text-xs text-indigo-400 hover:underline">${p.customer_email}</a>
         </div>
         <div class="flex justify-between py-1 border-b" style="border-color:var(--color-border)">
           <span style="color:var(--color-text-muted)">Phone</span>
-          <span>${p.customer_phone}</span>
+          <a href="tel:${p.customer_phone}" class="text-indigo-400 hover:underline">${p.customer_phone}</a>
         </div>
         <div class="flex justify-between py-1">
           <span style="color:var(--color-text-muted)">Amount</span>
