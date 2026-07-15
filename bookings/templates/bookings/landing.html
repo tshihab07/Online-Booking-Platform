@@ -33,7 +33,7 @@
     .btn-book:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,0,0,0.3); }
   </style>
 </head>
-<body data-slug="{{ business.slug }}">
+<body data-slug="{{ business.slug }}" data-initial-step="{{ initial_step }}">
 
 <!-- ── Hero Section ──────────────────────────────────────────────────────── -->
 <section class="hero-bg relative min-h-[70vh] flex items-center justify-center">
@@ -95,7 +95,7 @@
     <div class="step-line hidden sm:block"></div>
     <div class="step" data-step="4"><div class="step-num">4</div><span class="hidden sm:inline">Payment</span></div>
     <div class="step-line hidden sm:block"></div>
-    <div class="step" data-step="5"><div class="step-num">5</div><span class="hidden sm:inline">Details</span></div>
+    <div class="step" data-step="5"><div class="step-num">5</div><span class="hidden sm:inline">Checkout</span></div>
   </div>
 
   <!-- ── Step 1: Services ── -->
@@ -251,10 +251,6 @@
             <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Secure & encrypted</li>
           </ul>
         </div>
-        <div class="absolute top-4 right-4 w-6 h-6 rounded-full border-2 flex items-center justify-center"
-             style="border-color: var(--color-border);">
-          <i class="fas fa-check text-green-500 hidden"></i>
-        </div>
       </div>
 
       <!-- Offline Payment -->
@@ -273,10 +269,6 @@
             <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Booking confirmed</li>
             <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Show QR code to check-in</li>
           </ul>
-        </div>
-        <div class="absolute top-4 right-4 w-6 h-6 rounded-full border-2 flex items-center justify-center"
-             style="border-color: var(--color-border);">
-          <i class="fas fa-check text-green-500 hidden"></i>
         </div>
       </div>
     </div>
@@ -306,28 +298,35 @@
 
 </section>
 
+<!-- Floating Checkout Button (shown when panel is closed) -->
+<div id="checkout-float-btn" class="fixed bottom-6 right-6 z-50 hidden">
+  <button onclick="Booking.openCheckout()" class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 font-semibold hover:opacity-90 transition-opacity">
+    <i class="fas fa-shopping-cart"></i> Checkout
+  </button>
+</div>
+
 <!-- ── Checkout Slide Panel ───────────────────────────────────────────────── -->
 <div id="checkout-overlay" class="checkout-overlay"></div>
 <div id="checkout-panel" class="checkout-panel p-6 md:p-8">
   <div class="flex items-center justify-between mb-6">
     <h2 class="text-xl font-bold">Complete Booking</h2>
-    <button onclick="Booking.closeCheckout()" class="w-9 h-9 rounded-xl flex items-center justify-center hover:opacity-70"
-            style="background: var(--color-surface-2, rgba(0,0,0,0.2));">
+    <button onclick="Booking.closeCheckout()" class="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors"
+            style="background: var(--color-surface); border: 1px solid var(--color-border);">
       <i class="fas fa-times"></i>
     </button>
   </div>
 
   <!-- Order Summary -->
-  <div class="rounded-2xl p-5 mb-6" style="background: var(--color-surface-2, rgba(0,0,0,0.2)); border: 1px solid var(--color-border);">
-    <h3 class="text-sm font-semibold mb-4" style="color: var(--color-text-muted);">ORDER SUMMARY</h3>
+  <div class="rounded-2xl p-5 mb-6" style="background: var(--color-bg); border: 1px solid var(--color-border);">
+    <h3 class="text-sm font-semibold mb-4" style="color: var(--color-text);">ORDER SUMMARY</h3>
     <div class="space-y-2 text-sm">
-      <div class="flex justify-between"><span style="color: var(--color-text-muted);">Service</span><span id="summary-service" class="font-semibold">—</span></div>
-      <div class="flex justify-between"><span style="color: var(--color-text-muted);">Date</span><span id="summary-date" class="font-semibold">—</span></div>
-      <div class="flex justify-between"><span style="color: var(--color-text-muted);">Time</span><span id="summary-time" class="font-semibold">—</span></div>
-      <div class="flex justify-between"><span style="color: var(--color-text-muted);">Staff</span><span id="summary-staff" class="font-semibold">—</span></div>
-      <div class="flex justify-between"><span style="color: var(--color-text-muted);">Duration</span><span id="summary-duration" class="font-semibold">—</span></div>
+      <div class="flex justify-between"><span style="color: var(--color-text-muted);">Service</span><span id="summary-service" class="font-semibold" style="color: var(--color-text);">—</span></div>
+      <div class="flex justify-between"><span style="color: var(--color-text-muted);">Date</span><span id="summary-date" class="font-semibold" style="color: var(--color-text);">—</span></div>
+      <div class="flex justify-between"><span style="color: var(--color-text-muted);">Time</span><span id="summary-time" class="font-semibold" style="color: var(--color-text);">—</span></div>
+      <div class="flex justify-between"><span style="color: var(--color-text-muted);">Staff</span><span id="summary-staff" class="font-semibold" style="color: var(--color-text);">—</span></div>
+      <div class="flex justify-between"><span style="color: var(--color-text-muted);">Duration</span><span id="summary-duration" class="font-semibold" style="color: var(--color-text);">—</span></div>
       <div class="border-t pt-2 mt-2 flex justify-between text-base font-black" style="border-color: var(--color-border);">
-        <span>Total</span>
+        <span style="color: var(--color-text);">Total</span>
         <span id="summary-price" style="color: var(--color-primary);">—</span>
       </div>
     </div>
@@ -342,24 +341,24 @@
     <input type="hidden" name="start_time" id="checkout_start_time">
     <div class="space-y-4">
       <div>
-        <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Full Name *</label>
+        <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text);">Full Name *</label>
         <input type="text" name="customer_name" required placeholder="John Smith"
-               class="form-input" style="background: var(--color-surface-2, rgba(0,0,0,0.3));">
+               class="form-input" style="background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border);">
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Email *</label>
+        <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text);">Email *</label>
         <input type="email" name="customer_email" required placeholder="john@example.com"
-               class="form-input" style="background: var(--color-surface-2, rgba(0,0,0,0.3));">
+               class="form-input" style="background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border);">
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Phone *</label>
+        <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text);">Phone *</label>
         <input type="tel" name="customer_phone" required placeholder="+1 234 567 8900"
-               class="form-input" style="background: var(--color-surface-2, rgba(0,0,0,0.3));">
+               class="form-input" style="background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border);">
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text-muted);">Notes (optional)</label>
+        <label class="block text-sm font-medium mb-1.5" style="color: var(--color-text);">Notes (optional)</label>
         <textarea name="customer_notes" rows="2" placeholder="Any special requests…"
-                  class="form-input" style="background: var(--color-surface-2, rgba(0,0,0,0.3)); resize: none;"></textarea>
+                  class="form-input" style="background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); resize: none;"></textarea>
       </div>
       <input type="hidden" name="payment_method" id="payment_method_input" value="online">
     </div>
@@ -399,18 +398,14 @@ document.addEventListener('DOMContentLoaded', function() {
     card.addEventListener('click', function() {
       // Remove selected from all
       paymentCards.forEach(c => {
-        c.querySelector('div').style.borderColor = 'var(--color-border)';
-        c.querySelector('div').style.background = 'var(--color-surface-2, rgba(0,0,0,0.2))';
-        const checkIcon = c.querySelector('.fa-check');
-        if (checkIcon) checkIcon.classList.add('hidden');
+        c.style.borderColor = 'var(--color-border)';
+        c.style.background = ''; // Reset to default
       });
 
-      // Add selected to clicked
-      const cardDiv = this.querySelector('div');
-      cardDiv.style.borderColor = 'var(--color-primary)';
-      cardDiv.style.background = 'rgba(99,102,241,0.15)';
-      const checkIcon = this.querySelector('.fa-check');
-      if (checkIcon) checkIcon.classList.remove('hidden');
+      // Add selected to clicked - style the ENTIRE card
+      this.style.borderColor = 'var(--color-primary)';
+      this.style.background = 'rgba(99,102,241,0.15)';
+      this.style.boxShadow = '0 0 0 1px var(--color-primary)';
 
       // Set payment method
       const method = this.dataset.method;
