@@ -15,8 +15,8 @@ def get_working_hours(business, weekday_name):
     return day_data.get('open'), day_data.get('close')
 
 
-def generate_time_slots(open_str, close_str, duration_minutes, buffer_minutes=0):
-    """Generate list of (start_time, end_time) tuples for a day."""
+def generate_time_slots(open_str, close_str, duration_minutes=60, buffer_minutes=0):
+    """Generate list of (start_time, end_time) tuples for a day - hourly slots."""
     fmt = '%H:%M'
     try:
         open_dt = datetime.strptime(open_str, fmt)
@@ -26,8 +26,9 @@ def generate_time_slots(open_str, close_str, duration_minutes, buffer_minutes=0)
 
     slots = []
     current = open_dt
-    step = timedelta(minutes=duration_minutes + buffer_minutes)
-    end_delta = timedelta(minutes=duration_minutes)
+    # Always use 1-hour intervals for display
+    step = timedelta(hours=1)
+    end_delta = timedelta(hours=1)
 
     while current + end_delta <= close_dt:
         slots.append((current.time(), (current + end_delta).time()))
@@ -53,18 +54,19 @@ def get_available_slots(business, service, staff, target_date):
     """
     Return list of available slot dicts for a given business/service/staff/date.
     Each dict: {start, end, available: bool}
+    Shows hourly slots (9:00, 10:00, etc.) and disables if not enough consecutive hours.
     """
     weekday = target_date.strftime('%A')
     open_str, close_str = get_working_hours(business, weekday)
     if not open_str:
         return []
 
-    all_slots = generate_time_slots(
-        open_str, close_str,
-        service.duration,
-        business.buffer_time or 0,
-    )
+    # Generate hourly slots (always 1-hour intervals for display)
+    all_slots = generate_time_slots(open_str, close_str)
     booked = get_booked_slots(business, staff, target_date)
+
+    # Calculate how many consecutive hours the service needs
+    hours_needed = max(1, (service.duration + 59) // 60)  # Round up to hours
 
     # Enforce lead time
     now = datetime.now()
@@ -76,7 +78,20 @@ def get_available_slots(business, service, staff, target_date):
         slot_dt = datetime.combine(target_date, start)
         if target_date == date.today() and slot_dt < min_start:
             continue
-        available = (start, end) not in booked
+
+        # Check if enough consecutive hours are available for service duration
+        available = True
+        if hours_needed > 1:
+            # Check consecutive hours
+            for h in range(hours_needed):
+                check_start = (datetime.combine(date.today(), start) + timedelta(hours=h)).time()
+                check_end = (datetime.combine(date.today(), start) + timedelta(hours=h+1)).time()
+                if (check_start, check_end) in booked:
+                    available = False
+                    break
+        else:
+            available = (start, end) not in booked
+
         result.append({
             'start': start.strftime('%H:%M'),
             'end': end.strftime('%H:%M'),
@@ -105,11 +120,8 @@ def get_availability_heatmap(business, service, year, month):
             result[str(target)] = 'closed'
             continue
 
-        all_slots = generate_time_slots(
-            open_str, close_str,
-            service.duration,
-            business.buffer_time or 0,
-        )
+        # Use hourly slots for heatmap
+        all_slots = generate_time_slots(open_str, close_str)
         total = len(all_slots)
         if total == 0:
             result[str(target)] = 'closed'
