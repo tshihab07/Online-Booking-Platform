@@ -259,30 +259,68 @@ body {
 
 /***** time slot pills *****/
 .time-pill {
-  padding: 8px 16px;
-  border-radius: 50px;
-  border: 1px solid var(--color-border);
-  font-size: 13px;
-  font-weight: 500;
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: 2px solid var(--color-border, #d1d5db);
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
-  background: var(--color-surface-2);
-  color: var(--color-text);
+  background: var(--color-surface, #ffffff);
+  color: #111827; /* dark gray - high contrast on light backgrounds */
+  min-width: 110px;
 }
 .time-pill:hover:not(.unavailable) {
-  border-color: var(--color-primary);
-  background: rgba(99,102,241,0.1);
-  color: var(--color-primary);
+  border-color: var(--color-primary, #6366f1);
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--color-primary, #4f46e5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
 }
 .time-pill.selected {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
+  background: var(--color-primary, #6366f1);
+  border-color: var(--color-primary, #6366f1);
   color: white;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
 }
 .time-pill.unavailable {
-  opacity: 0.3;
+  opacity: 0.5;
   cursor: not-allowed;
-  text-decoration: line-through;
+  background: #f3f4f6;
+  color: #9ca3af;
+  border-color: var(--color-border, #e5e7eb);
+}
+.time-pill.unavailable:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--color-border, #e5e7eb);
+  background: #f3f4f6;
+  color: #9ca3af;
+}
+
+/* Dark mode support */
+.dark-mode .time-pill,
+[data-theme="dark"] .time-pill {
+  background: var(--color-surface-2, #1f2937);
+  color: #f9fafb;
+  border-color: var(--color-border, #374151);
+}
+.dark-mode .time-pill:hover:not(.unavailable),
+[data-theme="dark"] .time-pill:hover:not(.unavailable) {
+  background: rgba(99, 102, 241, 0.2);
+  color: var(--color-primary, #818cf8);
+}
+.dark-mode .time-pill.selected,
+[data-theme="dark"] .time-pill.selected {
+  background: var(--color-primary, #6366f1);
+  border-color: var(--color-primary, #6366f1);
+  color: white;
+}
+.dark-mode .time-pill.unavailable,
+[data-theme="dark"] .time-pill.unavailable {
+  background: #111827;
+  color: #6b7280;
+  border-color: var(--color-border, #374151);
 }
 
 /***** staff portrait cards *****/
